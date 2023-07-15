@@ -1,5 +1,5 @@
 <template>
-  <v-card class="p-5">
+  <v-card class="card-custom">
     <v-card-title>
       <v-btn variant="tonal" color="success">Export</v-btn>
       <v-spacer></v-spacer>
@@ -77,6 +77,11 @@ export default {
 </script>
 
 <style scoped>
+
+.card-custom{
+  margin: 80px;
+}
+
 .custom-text-field {
   width: 100px;
 }
