@@ -1,9 +1,10 @@
 const { defineConfig } = require('@vue/cli-service')
 module.exports = defineConfig({
   devServer: {
-    proxy: 'http://103.146.202.69:8787/'
+    proxy: 'https://5252-36-72-216-131.ngrok-free.app'
   },
   transpileDependencies: [
-    'vuetify'
+    'vuetify',
+    'bootstrap'
   ]
 })

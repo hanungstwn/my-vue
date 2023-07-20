@@ -10,26 +10,31 @@
         label="Search"
         class="custom-text-field"
         single-line
-        hide-details></v-text-field>
+        hide-details
+      ></v-text-field>
     </v-card-title>
     <v-data-table
       v-model="selected"
       :headers="headers"
       :items="users"
       :search="search"
+      :key="id"
       item-key="id"
       show-select
-      class="elevation-1">
+      class="elevation-1"
+    >
       <template v-slot:item.actions="{ item }">
-        <ModalForm />
+        <v-btn small icon @click="openModal(item.id)">
+          <v-icon color="primary">mdi-pencil</v-icon>
+        </v-btn>
       </template>
     </v-data-table>
+    <ModalForm ref="modalForm" :id="selectedId" />
   </v-card>
 </template>
 
 <script>
 import axios from "axios";
-// import { ref } from "vue";
 import moment from "moment";
 import ModalForm from "./ModalForm.vue";
 
@@ -39,8 +44,7 @@ export default {
   },
   data() {
     return {
-      search: '',
-      dialog: false,
+      search: "",
       selected: [],
       headers: [
         {
@@ -57,32 +61,28 @@ export default {
     };
   },
   methods: {
-    getData() {
-      const URL = "http://localhost:8080/orders";
-      axios.get(URL).then((res) => {
-        this.users = res.data.data;
-        this.users.forEach((user) => {
-          user.createdAt = moment(user.createdAt).format("DD MMMM YYYY");
-        });
-      });
+    // getData() {
+    //   const URL = "http://localhost:8080/orders";
+    //   axios.get(URL).then((res) => {
+    //     this.users = res.data.data;
+    //     this.users.forEach((user) => {
+    //       user.createdAt = moment(user.createdAt).format("DD MMMM YYYY");
+    //     });
+    //   });
+    // },
+    setUsers(data){
+      this.users = data;
     },
-    deleteUser(user) {
-      console.log("Delete user:", user);
+    openModal(id) {
+      this.$refs.modalForm.openModal(id);
     },
   },
   mounted() {
     this.getData();
+    axios
+    .get("http://localhost:8080/orders")
+    .then((response) => this.setUsers(response.data))
+    .catch((error) => console.log(error))
   },
 };
 </script>
-
-<style scoped>
-
-.card-custom{
-  margin: 80px;
-}
-
-.custom-text-field {
-  width: 100px;
-}
-</style>

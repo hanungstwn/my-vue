@@ -15,14 +15,14 @@
           width="40"
         />
 
-        <v-img
+        <!-- <v-img
           alt="Vuetify Name"
           class="shrink mt-1 hidden-sm-and-down"
           contain
           min-width="100"
-          src=""
+          src="https://cdn.vuetifyjs.com/images/logos/vuetify-name-dark.png"
           width="100"
-        />
+        /> -->
       </div>
 
       <v-spacer></v-spacer>
@@ -32,29 +32,21 @@
         target="_blank"
         text
       >
-        <span class="mr-2">History Data</span>
+        <span class="mr-2">HISTORY DATA</span>
         <!-- <v-icon>mdi-open-in-new</v-icon> -->
       </v-btn>
     </v-app-bar>
 
     <v-main>
-      <!-- <HelloWorld/> -->
-      <HistoryData/>
+      <router-view/>
     </v-main>
   </v-app>
 </template>
 
 <script>
-// import HelloWorld from './components/HelloWorld';
-import HistoryData from './components/HistoryData.vue';
 
 export default {
   name: 'App',
-
-  components: {
-    // HelloWorld,
-    HistoryData
-  },
 
   data: () => ({
     //

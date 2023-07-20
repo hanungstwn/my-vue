@@ -1,151 +1,85 @@
 <template>
-  <v-container>
-    <v-row class="text-center">
-      <v-col cols="12">
-        <v-img
-          :src="require('../assets/logo.svg')"
-          class="my-3"
-          contain
-          height="200"
-        />
-      </v-col>
-
-      <v-col class="mb-4">
-        <h1 class="display-2 font-weight-bold mb-3">
-          Welcome to Vuetify
-        </h1>
-
-        <p class="subheading font-weight-regular">
-          For help and collaboration with other Vuetify developers,
-          <br>please join our online
-          <a
-            href="https://community.vuetifyjs.com"
-            target="_blank"
-          >Discord Community</a>
-        </p>
-      </v-col>
-
-      <v-col
-        class="mb-5"
-        cols="12"
-      >
-        <h2 class="headline font-weight-bold mb-3">
-          What's next?
-        </h2>
-
-        <v-row justify="center">
-          <a
-            v-for="(next, i) in whatsNext"
-            :key="i"
-            :href="next.href"
-            class="subheading mx-3"
-            target="_blank"
-          >
-            {{ next.text }}
-          </a>
-        </v-row>
-      </v-col>
-
-      <v-col
-        class="mb-5"
-        cols="12"
-      >
-        <h2 class="headline font-weight-bold mb-3">
-          Important Links
-        </h2>
-
-        <v-row justify="center">
-          <a
-            v-for="(link, i) in importantLinks"
-            :key="i"
-            :href="link.href"
-            class="subheading mx-3"
-            target="_blank"
-          >
-            {{ link.text }}
-          </a>
-        </v-row>
-      </v-col>
-
-      <v-col
-        class="mb-5"
-        cols="12"
-      >
-        <h2 class="headline font-weight-bold mb-3">
-          Ecosystem
-        </h2>
-
-        <v-row justify="center">
-          <a
-            v-for="(eco, i) in ecosystem"
-            :key="i"
-            :href="eco.href"
-            class="subheading mx-3"
-            target="_blank"
-          >
-            {{ eco.text }}
-          </a>
-        </v-row>
-      </v-col>
-    </v-row>
-  </v-container>
+  <v-card class="card-custom">
+    <v-card-title>
+      <v-btn variant="tonal" color="success">Export</v-btn>
+      <v-spacer></v-spacer>
+      <v-spacer></v-spacer>
+      <v-text-field
+        v-model="search"
+        append-icon="mdi-magnify"
+        label="Search"
+        class="custom-text-field"
+        single-line
+        hide-details></v-text-field>
+    </v-card-title>
+    <v-data-table
+      v-model="selected"
+      :headers="headers"
+      :items="users"
+      :search="search"
+      item-key="id"
+      show-select
+      class="elevation-1">
+      <template v-slot:item.actions="{ item }">
+        <router-link :to="`/orders/${item.id}/details`">
+          <v-btn small icon>
+            <v-icon color="primary">mdi-pencil</v-icon>
+          </v-btn>
+        </router-link>
+      </template>
+    </v-data-table>
+  </v-card>
 </template>
 
 <script>
-  export default {
-    name: 'HelloWorld',
+import axios from "axios";
+import moment from "moment";
 
-    data: () => ({
-      ecosystem: [
+export default {
+  name: "HelloWorld",
+  props: ["orders"],
+  data() {
+    return {
+      search: "",
+      dialog: false,
+      selected: [],
+      headers: [
         {
-          text: 'vuetify-loader',
-          href: 'https://github.com/vuetifyjs/vuetify-loader',
+          text: "Nama Customer",
+          align: "start",
+          sortable: false,
+          value: "customerData.custName",
         },
-        {
-          text: 'github',
-          href: 'https://github.com/vuetifyjs/vuetify',
-        },
-        {
-          text: 'awesome-vuetify',
-          href: 'https://github.com/vuetifyjs/awesome-vuetify',
-        },
+        { text: "Alamat", value: "customerData.fullAddress" },
+        { text: "Tanggal", value: "createdAt" },
+        { text: "Action", value: "actions" },
       ],
-      importantLinks: [
-        {
-          text: 'Documentation',
-          href: 'https://vuetifyjs.com',
-        },
-        {
-          text: 'Chat',
-          href: 'https://community.vuetifyjs.com',
-        },
-        {
-          text: 'Made with Vuetify',
-          href: 'https://madewithvuejs.com/vuetify',
-        },
-        {
-          text: 'Twitter',
-          href: 'https://twitter.com/vuetifyjs',
-        },
-        {
-          text: 'Articles',
-          href: 'https://medium.com/vuetify',
-        },
-      ],
-      whatsNext: [
-        {
-          text: 'Explore components',
-          href: 'https://vuetifyjs.com/components/api-explorer',
-        },
-        {
-          text: 'Select a layout',
-          href: 'https://vuetifyjs.com/getting-started/pre-made-layouts',
-        },
-        {
-          text: 'Frequently Asked Questions',
-          href: 'https://vuetifyjs.com/getting-started/frequently-asked-questions',
-        },
-      ],
-    }),
-  }
+      users: [],
+    };
+  },
+  methods: {
+    getData() {
+      const URL = "http://localhost:8080/orders";
+      axios.get(URL).then((res) => {
+        this.users = res.data.data;
+        this.users.forEach((user) => {
+          user.createdAt = moment(user.createdAt).format("DD MMMM YYYY");
+        });
+      });
+    },
+  },
+  mounted() {
+    this.getData();
+  },
+};
 </script>
+
+<style scoped>
+.card-custom {
+  margin: 80px;
+}
+
+.custom-text-field {
+  width: 100px;
+}
+</style>
