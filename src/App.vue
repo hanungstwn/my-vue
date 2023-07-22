@@ -7,7 +7,7 @@
     >
       <div class="d-flex align-center">
         <v-img
-          alt="Vuetify Logo"
+          alt="GENAH Logo"
           class="shrink mr-2"
           contain
           src="./assets/logo-gb.png"
@@ -28,8 +28,7 @@
       <v-spacer></v-spacer>
 
       <v-btn
-        href="https://github.com/vuetifyjs/vuetify/releases/latest"
-        target="_blank"
+        href="/"
         text
       >
         <span class="mr-2">HISTORY DATA</span>
