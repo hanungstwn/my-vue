@@ -53,7 +53,7 @@
                 </v-col>
                 <v-col cols="12">
                   <v-textarea
-                    label="Waktu"
+                    label="Catatan Kurir"
                     v-model="users.courierNotes"
                     outlined
                     required></v-textarea>

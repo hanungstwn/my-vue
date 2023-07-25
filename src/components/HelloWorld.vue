@@ -32,12 +32,15 @@
       </div>
       <div class="date-input">
         <v-select
+          clearable
+          v-model="selectedExpedition"
           label="Expedition"
           :items="expeditions"
           class="custom-select-field"
           item-text="expedition"
           item-value="exid"
-          variant="underlined"></v-select>
+          variant="underlined"
+          @change="filterByExpedition"></v-select>
       </div>
       <v-spacer></v-spacer>
       <v-spacer></v-spacer>
@@ -106,12 +109,16 @@ export default {
       ],
       headers: [
         {
-          text: "Nama Customer",
           align: "center",
+          text: "No",
+          value: "no",
+        },
+        {
+          text: "Nama Customer",
           value: "customerData.custName",
         },
         { text: "Alamat", value: "customerData.fullAddress" },
-        { text: "Tanggal", value: "createdAt" },
+        { text: "Tanggal", value: "createdAtLocal" },
         {
           text: "Ekspedisi",
           value: "deliveryData.expedition",
@@ -125,11 +132,29 @@ export default {
   },
   computed: {
     filteredItems() {
-      // Jika startDate atau endDate kosong atau invalidDates true, kembalikan semua data tanpa penyaringan
+      console.log("this.users:", this.users);
+      // Jika startDate, endDate, atau invalidDates true, kembalikan semua data tanpa penyaringan
       if (!this.startDate || !this.endDate || this.invalidDates) {
         return this.users;
       }
 
+      // Jika ada ekspedisi yang dipilih, saring data berdasarkan ekspedisi
+      if (this.selectedExpedition) {
+        return this.users.filter((user) => {
+          const itemDate = new Date(user.createdAt);
+          const start = new Date(this.startDate);
+          const end = new Date(this.endDate);
+
+          // Saring berdasarkan ekspedisi yang dipilih
+          return (
+            itemDate >= start &&
+            itemDate <= end &&
+            user.deliveryData.expedition === this.selectedExpedition
+          );
+        });
+      }
+
+      // Jika tidak ada ekspedisi yang dipilih, kembalikan semua data dengan penyaringan tanggal
       return this.users.filter((user) => {
         const itemDate = new Date(user.createdAt);
         const start = new Date(this.startDate);
@@ -143,26 +168,29 @@ export default {
       const URL = "http://localhost:8080/orders";
       axios.get(URL).then((res) => {
         this.users = res.data.data;
-        this.users.forEach((user) => {
-          // Konversi createdAt ke zona waktu lokal Indonesia (WIB)
-          const createdAtLocal = moment(user.createdAt)
+        this.users.forEach((user, index) => {
+          user.no = index + 1;
+          // Konversi createdAt ke zona waktu lokal Indonesia (WIB) dan format yang diinginkan
+          user.createdAtLocal = moment(user.createdAt)
             .utcOffset("+0700")
-            .format("DD MM YYYY");
+            .format("DD MMMM YYYY, HH:mm"); // Format tanggal-bulan-tahun dan jam
+
           user.createdAt = moment(user.createdAt)
             .utcOffset("+0700")
             .toDate()
             .toISOString();
 
-          // Konversi updatedAt ke zona waktu lokal Indonesia (WIB)
-          const updatedAtLocal = moment(user.updatedAt)
+          // Konversi updatedAt ke zona waktu lokal Indonesia (WIB) dan format yang diinginkan
+          user.updatedAtLocal = moment(user.updatedAt)
             .utcOffset("+0700")
-            .format("DD MM YYYY");
+            .format("DD MMMM YYYY, HH:mm"); // Format tanggal-bulan-tahun dan jam
+
           user.updatedAt = moment(user.updatedAt)
             .utcOffset("+0700")
             .toDate()
             .toISOString();
 
-          console.log(createdAtLocal, updatedAtLocal);
+          // console.log(user.createdAtLocal, user.updatedAtLocal);
         });
       });
     },
@@ -214,6 +242,10 @@ export default {
         .catch((error) => {
           console.error("Error exporting data:", error);
         });
+    },
+
+    filterByExpedition() {
+      this.validateDates(); // Pastikan tanggal yang dipilih masih valid
     },
   },
   watch: {

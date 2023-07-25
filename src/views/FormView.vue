@@ -59,7 +59,7 @@ export default {
     updateData() {
       axios
         .patch(
-          "http://localhost:8080/orders/" + this.users.id + "/details",
+          "http://localhost:8080/orders/" + this.users.id,
           this.users
         )
         .then((response) => {
