@@ -62,17 +62,18 @@
       <template v-slot:item.createdAtLocal="{ item }">
         {{ item.createdAtLocal }}
       </template>
+
+      <template v-slot:item.isValidOrder="{ item }">
+        <v-chip v-if="item.isValidOrder" color="success"> Benar </v-chip>
+        <v-chip v-else color="error"> Salah </v-chip>
+      </template>
+
       <template v-slot:item.actions="{ item }">
         <router-link :to="`/orders/${item.id}/details`">
           <v-btn small icon>
             <v-icon color="primary">mdi-pencil</v-icon>
           </v-btn>
         </router-link>
-      </template>
-
-      <template v-slot:item.isValidOrder="{ item }">
-        <v-chip v-if="item.isValidOrder" color="success"> Benar </v-chip>
-        <v-chip v-else color="error"> Salah </v-chip>
       </template>
     </v-data-table>
   </v-card>
@@ -81,10 +82,14 @@
 <script>
 import axios from "axios";
 import moment from "moment";
+import VueSweetalert2 from "vue-sweetalert2";
 
 export default {
   name: "HelloWorld",
   props: ["orders"],
+  components: {
+    VueSweetalert2,
+  },
   data() {
     return {
       search: "",
@@ -95,16 +100,16 @@ export default {
       selected: [],
       expeditions: [
         {
-          expedition: "j&t",
-          exid: "opt1",
+          expedition: "J&t",
+          exid: "j&t",
         },
         {
-          expedition: "ninja",
-          exid: "opt2",
+          expedition: "Ninja",
+          exid: "ninja",
         },
         {
-          expedition: "sicepat",
-          exid: "opt3",
+          expedition: "SiCepat",
+          exid: "sicepat",
         },
       ],
       headers: [
@@ -132,7 +137,7 @@ export default {
   },
   computed: {
     filteredItems() {
-      console.log("this.users:", this.users);
+      // console.log("this.users:", this.users);
       // Jika startDate, endDate, atau invalidDates true, kembalikan semua data tanpa penyaringan
       if (!this.startDate || !this.endDate || this.invalidDates) {
         return this.users;
@@ -158,7 +163,7 @@ export default {
       return this.users.filter((user) => {
         const itemDate = new Date(user.createdAt);
         const start = new Date(this.startDate);
-        const end = new Date(this.endDate);
+        const end = new Date(this.endDate);  
         return itemDate >= start && itemDate <= end;
       });
     },
@@ -210,6 +215,7 @@ export default {
       const defaultStartDate = "1970-01-01T00:00";
       const defaultEndDate = moment().format("YYYY-MM-DDTHH:mm");
 
+      // Format start and end dates for the API request
       const formattedStartDate = this.startDate
         ? moment(this.startDate).format("YYYY-MM-DDTHH:mm")
         : defaultStartDate;
@@ -218,28 +224,50 @@ export default {
         ? moment(this.endDate).format("YYYY-MM-DDTHH:mm")
         : defaultEndDate;
 
-      const URL = "http://localhost:8080/orders/generate";
+      // Prepare the selected expedition for the API request
+      const selectedExpedition = this.selectedExpedition
+        ? this.selectedExpedition
+        : "";
+
+      // Create the URL with the necessary query parameters
+      const baseURL = "http://localhost:8080/orders/generate";
       const params = {
         timeStart: formattedStartDate,
         timeEnd: formattedEndDate,
+        expedition: selectedExpedition,
       };
+      const queryString = new URLSearchParams(params).toString();
+      const URL = `${baseURL}?${queryString}`;
 
       axios({
         url: URL,
         method: "GET",
         responseType: "blob",
-        params,
         headers: {},
       })
         .then((res) => {
-          var FILE = window.URL.createObjectURL(new Blob([res.data]));
-          var docUrl = document.createElement("a");
-          docUrl.href = FILE;
-          docUrl.setAttribute("download", "file.xlsx");
-          document.body.appendChild(docUrl);
-          docUrl.click();
+          // Create a download link and trigger the click event to start downloading the file
+          const blob = new Blob([res.data], {
+            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          });
+          const downloadLink = window.URL.createObjectURL(blob);
+          const anchor = document.createElement("a");
+          anchor.href = downloadLink;
+          anchor.download = "file.xlsx";
+          document.body.appendChild(anchor);
+          anchor.click();
+          document.body.removeChild(anchor);
+
+          // Clean up
+          window.URL.revokeObjectURL(downloadLink);
         })
         .catch((error) => {
+          this.$swal({
+            title: "Ekspedisi Belum Dipilih!",
+            icon: "error",
+            timer: 1500, // Set the time (in milliseconds) for the dialog to close automatically
+            showConfirmButton: false, // Hide the "OK" button
+          });
           console.error("Error exporting data:", error);
         });
     },

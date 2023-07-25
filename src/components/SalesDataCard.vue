@@ -72,22 +72,15 @@ export default {
           "http://localhost:8080/orders/" + this.$route.params.id + "/details"
         )
         .then((response) => {
-          console.log("API Response Data:", response.data); // Add this line to see the response data
-
+          console.log("API Response Data:", response.data);
           this.users = response.data.data;
           this.isLoading = false;
 
-          // Emit the event with the loaded users data
           this.$emit("users-loaded", this.users);
         })
         .catch((error) => console.log(error));
     },
     updateSalesData() {
-      // Your logic to update the sales data
-      // For example, you can update the 'users.salesData' object
-      // ...
-
-      // Emit an event to inform the parent (FormView.vue) about the data update
       this.$emit("users-updated", this.users);
     },
     hideSkeleton() {

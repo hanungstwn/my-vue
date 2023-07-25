@@ -58,17 +58,19 @@ export default {
   methods: {
     updateData() {
       axios
-        .patch(
-          "http://localhost:8080/orders/" + this.users.id,
-          this.users
-        )
+        .patch("http://localhost:8080/orders/" + this.users.id, this.users)
         .then((response) => {
           this.$swal("Data Berhasil Disimpan");
           console.log(response);
           this.$router.push({ name: "home" });
         })
         .catch((error) => {
-          this.$swal("Data Gagal Disimpan");
+          this.$swal({
+            title: "Data Gagal Disimpan",
+            icon: "error",
+            timer: 1500, // Set the time (in milliseconds) for the dialog to close automatically
+            showConfirmButton: false, // Hide the "OK" button
+          });
           this.validation = error.response.data.data;
         });
     },
@@ -80,11 +82,6 @@ export default {
         this.isLoading = false;
       }, 3000);
     },
-  },
-
-  created() {
-    // Listen for the 'sales-data-updated' event emitted by SalesDataCard
-    this.$on("sales-data-updated", this.handleSalesDataUpdated);
   },
 };
 </script>
