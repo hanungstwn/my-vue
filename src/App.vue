@@ -8,7 +8,7 @@
       <div class="d-flex align-center">
         <v-img
           alt="GENAH Logo"
-          class="shrink mr-2"
+          class="shrink ml-4"
           contain
           src="./assets/logo-gb.png"
           transition="scale-transition"

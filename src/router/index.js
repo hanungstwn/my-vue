@@ -1,8 +1,8 @@
-import ModalFormVue from '@/components/ModalForm.vue'
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import OrderDetail from '../views/FormOrder.vue'
+import FormView from '../views/FormView.vue'
 
 Vue.use(VueRouter)
 
@@ -20,10 +20,15 @@ const routes = [
     // which is lazy-loaded when the route is visited.
     component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue')
   },
+  // {
+  //   path: '/orders/:id/details',
+  //   name: 'OrderDetail',
+  //   component: OrderDetail
+  // },
   {
     path: '/orders/:id/details',
-    name: 'OrderDetail',
-    component: OrderDetail
+    name: 'Form',
+    component: FormView
   }
 ]
 

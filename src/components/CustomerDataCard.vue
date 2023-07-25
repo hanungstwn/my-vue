@@ -1,0 +1,133 @@
+<template>
+  <v-form>
+    <v-card-text>
+      <v-container>
+        <v-card class="custom-card">
+          <v-skeleton-loader
+            type="paragraph"
+            v-if="isLoading"></v-skeleton-loader>
+          <div v-else>
+            <h2 class="text-center mb-10">Customer Data</h2>
+            <v-row>
+              <!-- Customer Data -->
+              <v-col cols="12" sm="6" md="6">
+                <v-text-field
+                  label="Nama Customer"
+                  hint="Customer Name"
+                  outlined
+                  required
+                  v-model="users.customerData.custName"></v-text-field>
+                <v-text-field
+                  class="custom-field"
+                  label="Nomor Whatsapp"
+                  hint="Customer Whatsapp Number"
+                  outlined
+                  required
+                  v-model="users.customerData.custWhatsapp"></v-text-field>
+              </v-col>
+              <v-col cols="12" sm="6" md="6">
+                <v-text-field
+                  label="Kecamatan"
+                  hint="Customer District"
+                  outlined
+                  required
+                  v-model="users.customerData.district"></v-text-field>
+                <v-text-field
+                  label="Kabupaten"
+                  hint="Customer Regency"
+                  outlined
+                  required
+                  v-model="users.customerData.regency"></v-text-field>
+              </v-col>
+              <v-col cols="12">
+                <v-textarea
+                  label="Alamat Lengkap"
+                  hint="Full Address"
+                  outlined
+                  required
+                  v-model="users.customerData.fullAddress"></v-textarea>
+              </v-col>
+            </v-row>
+          </div>
+        </v-card>
+      </v-container>
+    </v-card-text>
+  </v-form>
+</template>
+
+<script>
+import axios from "axios";
+
+export default {
+  name: "CustomerData",
+
+  props: {
+    users: {
+      type: Object,
+      required: true,
+    },
+  },
+
+  data() {
+    return {
+      users: [],
+      isLoading: true,
+      text: "",
+    };
+  },
+
+  mounted() {
+    this.hideSkeleton();
+    this.fetchData();
+  },
+
+  methods: {
+    fetchData() {
+      axios
+        .get(
+          "http://localhost:8080/orders/" + this.$route.params.id + "/details"
+        )
+        .then((response) => {
+          console.log("API Response Data:", response.data); // Add this line to see the response data
+
+          this.users = response.data.data;
+          this.isLoading = false;
+
+          // Emit the event with the loaded users data
+          this.$emit("users-loaded", this.users);
+        })
+        .catch((error) => console.log(error));
+    },
+
+    updateCustomerData() {
+      // Your logic to update the customer data
+      // For example, you can update the 'users.customerData' object
+      // ...
+
+      // Emit an event to inform the parent (FormView.vue) about the data update
+      this.$emit("users-updated", this.users);
+    },
+
+    hideSkeleton() {
+      setTimeout(() => {
+        this.isLoading = false;
+      }, 3000);
+    },
+  },
+};
+</script>
+
+<style>
+.custom-card {
+  margin-top: 20px;
+  padding: 30px;
+}
+
+.button-wrapper {
+  /* right: 0; */
+  display: flex;
+  justify-content: end;
+  position: absolute;
+  margin: 20px 20px 20px 0;
+}
+</style>

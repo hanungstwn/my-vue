@@ -4,8 +4,41 @@
       <v-btn variant="tonal" color="success" class="me-4" @click="exportData"
         >Export</v-btn
       >
-      <DateStart v-model="startDate" @change="invalidDates" />
-      <DateEnd v-model="endDate" @change="invalidDates" />
+      <div class="date-input">
+        <v-datetime-picker
+          label="Start Date"
+          v-model="startDate"
+          class="date-input">
+          <template slot="dateIcon">
+            <v-icon>mdi-calendar</v-icon>
+          </template>
+          <template slot="timeIcon">
+            <v-icon>mdi-clock-outline</v-icon>
+          </template></v-datetime-picker
+        >
+      </div>
+      <div class="date-input">
+        <v-datetime-picker
+          label="End Date"
+          v-model="endDate"
+          class="date-input">
+          <template slot="dateIcon">
+            <v-icon>mdi-calendar</v-icon>
+          </template>
+          <template slot="timeIcon">
+            <v-icon>mdi-clock-outline</v-icon>
+          </template></v-datetime-picker
+        >
+      </div>
+      <div class="date-input">
+        <v-select
+          label="Expedition"
+          :items="expeditions"
+          class="custom-select-field"
+          item-text="expedition"
+          item-value="exid"
+          variant="underlined"></v-select>
+      </div>
       <v-spacer></v-spacer>
       <v-spacer></v-spacer>
       <v-text-field
@@ -22,14 +55,21 @@
       :items="filteredItems"
       :search="search"
       item-key="id"
-      show-select
       class="elevation-1">
+      <template v-slot:item.createdAtLocal="{ item }">
+        {{ item.createdAtLocal }}
+      </template>
       <template v-slot:item.actions="{ item }">
         <router-link :to="`/orders/${item.id}/details`">
           <v-btn small icon>
             <v-icon color="primary">mdi-pencil</v-icon>
           </v-btn>
         </router-link>
+      </template>
+
+      <template v-slot:item.isValidOrder="{ item }">
+        <v-chip v-if="item.isValidOrder" color="success"> Benar </v-chip>
+        <v-chip v-else color="error"> Salah </v-chip>
       </template>
     </v-data-table>
   </v-card>
@@ -38,33 +78,45 @@
 <script>
 import axios from "axios";
 import moment from "moment";
-import DateStart from "./DateStart.vue";
-import DateEnd from "./DateEnd.vue";
 
 export default {
   name: "HelloWorld",
   props: ["orders"],
-  components: {
-    DateStart,
-    DateEnd,
-  },
   data() {
     return {
       search: "",
-      startDate: "",
-      endDate: "",
+      startDate: null,
+      endDate: null,
       dialog: false,
+      selectedExpedition: null,
       selected: [],
+      expeditions: [
+        {
+          expedition: "j&t",
+          exid: "opt1",
+        },
+        {
+          expedition: "ninja",
+          exid: "opt2",
+        },
+        {
+          expedition: "sicepat",
+          exid: "opt3",
+        },
+      ],
       headers: [
         {
           text: "Nama Customer",
-          align: "start",
-          sortable: false,
+          align: "center",
           value: "customerData.custName",
         },
         { text: "Alamat", value: "customerData.fullAddress" },
-        { text: "Dibuat Pada", value: "createdAt" },
-        // { text: "Diperbarui Pada", value: "updatedAt" },
+        { text: "Tanggal", value: "createdAt" },
+        {
+          text: "Ekspedisi",
+          value: "deliveryData.expedition",
+        },
+        { text: "Status", value: "isValidOrder" },
         { text: "Action", value: "actions" },
       ],
       users: [],
@@ -92,8 +144,25 @@ export default {
       axios.get(URL).then((res) => {
         this.users = res.data.data;
         this.users.forEach((user) => {
-          user.createdAt = moment(user.createdAt).format("DD MMMM YYYY");
-          user.updatedAt = moment(user.updatedAt).format("DD MMMM YYYY");
+          // Konversi createdAt ke zona waktu lokal Indonesia (WIB)
+          const createdAtLocal = moment(user.createdAt)
+            .utcOffset("+0700")
+            .format("DD MM YYYY");
+          user.createdAt = moment(user.createdAt)
+            .utcOffset("+0700")
+            .toDate()
+            .toISOString();
+
+          // Konversi updatedAt ke zona waktu lokal Indonesia (WIB)
+          const updatedAtLocal = moment(user.updatedAt)
+            .utcOffset("+0700")
+            .format("DD MM YYYY");
+          user.updatedAt = moment(user.updatedAt)
+            .utcOffset("+0700")
+            .toDate()
+            .toISOString();
+
+          console.log(createdAtLocal, updatedAtLocal);
         });
       });
     },
@@ -110,11 +179,9 @@ export default {
     },
 
     exportData() {
-      // Set default start and end dates if they are not selected
       const defaultStartDate = "1970-01-01T00:00";
       const defaultEndDate = moment().format("YYYY-MM-DDTHH:mm");
 
-      // Use the selected dates if available, otherwise use default dates
       const formattedStartDate = this.startDate
         ? moment(this.startDate).format("YYYY-MM-DDTHH:mm")
         : defaultStartDate;
@@ -133,11 +200,8 @@ export default {
         url: URL,
         method: "GET",
         responseType: "blob",
-        params, // Pass the startDate and endDate as query parameters
-        headers: {
-          // You may add the Authorization header here if required by the API
-          // "Authorization": "Bearer YOUR_ACCESS_TOKEN",
-        },
+        params,
+        headers: {},
       })
         .then((res) => {
           var FILE = window.URL.createObjectURL(new Blob([res.data]));
@@ -148,11 +212,19 @@ export default {
           docUrl.click();
         })
         .catch((error) => {
-          // Handle any error that might occur during the export process
           console.error("Error exporting data:", error);
         });
     },
   },
+  watch: {
+    startDate() {
+      this.validateDates();
+    },
+    endDate() {
+      this.validateDates();
+    },
+  },
+
   mounted() {
     this.getData();
   },
@@ -170,10 +242,8 @@ export default {
 }
 
 .date-input {
-  width: 200px;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  margin-bottom: 10px;
+  width: 150px;
+  margin-top: 10px;
+  margin-left: 10px;
 }
 </style>
