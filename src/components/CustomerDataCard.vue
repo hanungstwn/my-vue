@@ -16,7 +16,15 @@
                   hint="Customer Name"
                   outlined
                   required
+                  v-model="users.isExported"></v-text-field>
+                <v-text-field
+                  label="Nama Customer"
+                  hint="Customer Name"
+                  outlined
+                  required
                   v-model="users.customerData.custName"></v-text-field>
+              </v-col>
+              <v-col cols="12" sm="6" md="6">
                 <v-text-field
                   class="custom-field"
                   label="Nomor Whatsapp"
@@ -25,19 +33,33 @@
                   required
                   v-model="users.customerData.custWhatsapp"></v-text-field>
               </v-col>
-              <v-col cols="12" sm="6" md="6">
+              <v-col cols="12" sm="4" md="4">
                 <v-text-field
                   label="Kecamatan"
                   hint="Customer District"
                   outlined
+                  disabled
                   required
                   v-model="users.customerData.district"></v-text-field>
+              </v-col>
+              <v-col cols="12" sm="4" md="4">
                 <v-text-field
                   label="Kabupaten"
                   hint="Customer Regency"
                   outlined
+                  disabled
                   required
                   v-model="users.customerData.regency"></v-text-field>
+              </v-col>
+              <v-col cols="12" sm="4" md="4">
+                <v-text-field
+                  class="custom-field"
+                  label="Nomor RO"
+                  hint="Nomor RO"
+                  outlined
+                  required
+                  disabled
+                  v-model="users.customerData.roCount"></v-text-field>
               </v-col>
               <v-col cols="12">
                 <v-textarea
@@ -47,6 +69,14 @@
                   required
                   v-model="users.customerData.fullAddress"></v-textarea>
               </v-col>
+              <!-- <v-col cols="12">
+                <v-textarea
+                  label="Alamat Lengkap"
+                  hint="Full Address"
+                  outlined
+                  required
+                  v-model="users.customerData.fullAddress"></v-textarea>
+              </v-col> -->
             </v-row>
           </div>
         </v-card>

@@ -1,7 +1,15 @@
 <template>
   <v-card class="card-custom">
     <v-card-title class="card-title-custom">
-      <v-btn variant="tonal" color="success" class="me-4" @click="exportData"
+      <v-btn
+        dark
+        variant="tonal"
+        color="#1D6F42"
+        class="me-4"
+        @click="
+          exportData();
+          isDataExported();
+        "
         >Export</v-btn
       >
       <div class="date-input">
@@ -59,9 +67,9 @@
       :search="search"
       item-key="id"
       class="elevation-1">
-      <template v-slot:item.createdAtLocal="{ item }">
-        {{ item.createdAtLocal }}
-      </template>
+      <!-- <template v-slot:item.createdAt="{ item }">
+        {{ item.createdAt }}
+      </template> -->
 
       <template v-slot:item.isValidOrder="{ item }">
         <v-chip v-if="item.isValidOrder" color="success"> Benar </v-chip>
@@ -69,9 +77,18 @@
       </template>
 
       <template v-slot:item.actions="{ item }">
+        <!-- Check if the data is exported and update the action buttons accordingly -->
+        <!-- <v-icon v-if="item.isDataExported" color="success"
+          >mdi-checkbox-marked-circle</v-icon
+        > -->
         <router-link :to="`/orders/${item.id}/details`">
           <v-btn small icon>
-            <v-icon color="primary">mdi-pencil</v-icon>
+            <v-icon size="x-large" color="warning">mdi-pencil-circle</v-icon>
+          </v-btn>
+        </router-link>
+        <router-link :to="`/orders/${item.id}`">
+          <v-btn small icon @click="confirmDeleteData(item)">
+            <v-icon size="x-large" color="error">mdi-close-circle</v-icon>
           </v-btn>
         </router-link>
       </template>
@@ -83,6 +100,7 @@
 import axios from "axios";
 import moment from "moment";
 import VueSweetalert2 from "vue-sweetalert2";
+import Swal from "sweetalert2";
 
 export default {
   name: "HelloWorld",
@@ -100,8 +118,8 @@ export default {
       selected: [],
       expeditions: [
         {
-          expedition: "J&t",
-          exid: "j&t",
+          expedition: "Jnt",
+          exid: "jnt",
         },
         {
           expedition: "Ninja",
@@ -130,6 +148,7 @@ export default {
         },
         { text: "Status", value: "isValidOrder" },
         { text: "Action", value: "actions" },
+        { text: "Export", value: "isExported" },
       ],
       users: [],
       invalidDates: false,
@@ -146,7 +165,7 @@ export default {
       // Jika ada ekspedisi yang dipilih, saring data berdasarkan ekspedisi
       if (this.selectedExpedition) {
         return this.users.filter((user) => {
-          const itemDate = new Date(user.createdAt);
+          const itemDate = new Date(user.createdAtLocal);
           const start = new Date(this.startDate);
           const end = new Date(this.endDate);
 
@@ -159,11 +178,15 @@ export default {
         });
       }
 
+      // this.users.forEach((user) => {
+      //   user.isExported = this.isDataExported(user);
+      // });
+
       // Jika tidak ada ekspedisi yang dipilih, kembalikan semua data dengan penyaringan tanggal
       return this.users.filter((user) => {
-        const itemDate = new Date(user.createdAt);
+        const itemDate = new Date(user.createdAtLocal);
         const start = new Date(this.startDate);
-        const end = new Date(this.endDate);  
+        const end = new Date(this.endDate);
         return itemDate >= start && itemDate <= end;
       });
     },
@@ -175,29 +198,55 @@ export default {
         this.users = res.data.data;
         this.users.forEach((user, index) => {
           user.no = index + 1;
-          // Konversi createdAt ke zona waktu lokal Indonesia (WIB) dan format yang diinginkan
-          user.createdAtLocal = moment(user.createdAt)
-            .utcOffset("+0700")
-            .format("DD MMMM YYYY, HH:mm"); // Format tanggal-bulan-tahun dan jam
 
-          user.createdAt = moment(user.createdAt)
+          // Ubah format UTC menjadi waktu lokal Indonesia (+7 jam)
+          const createdAtLocal = moment
+            .utc(user.createdAt)
             .utcOffset("+0700")
-            .toDate()
-            .toISOString();
+            .format("DD MMMM YYYY, HH:mm");
 
-          // Konversi updatedAt ke zona waktu lokal Indonesia (WIB) dan format yang diinginkan
-          user.updatedAtLocal = moment(user.updatedAt)
-            .utcOffset("+0700")
-            .format("DD MMMM YYYY, HH:mm"); // Format tanggal-bulan-tahun dan jam
+          console.log(createdAtLocal);
 
-          user.updatedAt = moment(user.updatedAt)
-            .utcOffset("+0700")
-            .toDate()
-            .toISOString();
-
-          // console.log(user.createdAtLocal, user.updatedAtLocal);
+          // Tambahkan properti baru ke user untuk menyimpan createdAt dalam format waktu lokal
+          user.createdAtLocal = createdAtLocal;
         });
       });
+    },
+
+    confirmDeleteData(user) {
+      Swal.fire({
+        title: "Yakin Hapus Data?",
+        text: "Data yang dihapus tidak dapat dikembalikan",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Yes",
+        cancelButtonText: "No",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          this.deleteData(user);
+        } else this.$router.push({ name: "home" });
+      });
+    },
+
+    deleteData(user) {
+      axios
+        .delete(`http://localhost:8080/orders/${user.id}`)
+        .then((response) => {
+          this.$swal("Data Berhasil Dihapus");
+          console.log(response);
+          this.$router.push({ name: "home" });
+        })
+        .catch((error) => {
+          this.$swal({
+            title: "Data Gagal Dihapus",
+            icon: "error",
+            timer: 1500,
+            showConfirmButton: false,
+          });
+          this.validation = error.response.data.data;
+        });
     },
 
     validateDates() {
@@ -229,7 +278,17 @@ export default {
         ? this.selectedExpedition
         : "";
 
-      // Create the URL with the necessary query parameters
+      // Check if both start date and end date are set and an expedition is selected before exporting data
+      if (!this.startDate || !this.endDate || !selectedExpedition) {
+        this.$swal({
+          title: "Pilih Tanggal & Ekspedisi !",
+          icon: "error",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+        return; // Stop the export process if dates and/or expedition are not selected
+      }
+
       const baseURL = "http://localhost:8080/orders/generate";
       const params = {
         timeStart: formattedStartDate,
@@ -246,31 +305,68 @@ export default {
         headers: {},
       })
         .then((res) => {
-          // Create a download link and trigger the click event to start downloading the file
           const blob = new Blob([res.data], {
             type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
           });
+
+          const currentDate = moment().format("YYYY-MM-DD");
+          const currentTime = moment().format("HHmmss");
+          const fileName = `orders_${currentDate}_${currentTime}.xlsx`;
+
           const downloadLink = window.URL.createObjectURL(blob);
           const anchor = document.createElement("a");
           anchor.href = downloadLink;
-          anchor.download = "file.xlsx";
+          anchor.download = fileName;
           document.body.appendChild(anchor);
           anchor.click();
           document.body.removeChild(anchor);
 
-          // Clean up
           window.URL.revokeObjectURL(downloadLink);
+          // this.updateDataExportStatus(this.filteredItems);
         })
         .catch((error) => {
           this.$swal({
-            title: "Ekspedisi Belum Dipilih!",
+            title: "Error, data gagal dieksport",
             icon: "error",
-            timer: 1500, // Set the time (in milliseconds) for the dialog to close automatically
-            showConfirmButton: false, // Hide the "OK" button
+            timer: 1500,
+            showConfirmButton: false,
           });
           console.error("Error exporting data:", error);
         });
     },
+
+  //   updateDataExportStatus(itemsToUpdate) {
+  //   // Buat array yang berisi id dari item yang akan diubah
+  //   const idsToUpdate = itemsToUpdate.map((item) => item.id);
+
+  //   // Lakukan permintaan PATCH untuk setiap id
+  //   const updatePromises = idsToUpdate.map((id) => {
+  //     return axios.patch(`http://localhost:8080/orders/${id}`, {
+  //       isExported: true,
+  //       // Jika ada field lain yang perlu diperbarui, tambahkan di sini
+  //     });
+  //   });
+
+  //   // Tunggu semua permintaan selesai
+  //   Promise.all(updatePromises)
+  //     .then((responses) => {
+  //       // Proses hasil dari permintaan PATCH jika diperlukan
+  //       responses.forEach((response, index) => {
+  //         const id = idsToUpdate[index];
+  //         const updatedItem = itemsToUpdate.find((item) => item.id === id);
+  //         if (updatedItem) {
+  //           updatedItem.isExported = true; // Ubah nilai isExported menjadi true
+  //         }
+  //       });
+  //     })
+  //     .catch((error) => {
+  //       console.error("Error updating isExported:", error);
+  //       // Cetak pesan kesalahan dari server
+  //       if (error.response && error.response.data) {
+  //         console.error("Server response:", error.response.data);
+  //       }
+  //     });
+  // },
 
     filterByExpedition() {
       this.validateDates(); // Pastikan tanggal yang dipilih masih valid

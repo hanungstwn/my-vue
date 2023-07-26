@@ -67,7 +67,7 @@
                             <v-col cols="12" sm="6" md="6">
                               <v-text-field
                                 label="Harga /Produk"
-                                hint="example of helper text only on focus"
+                                hint="Harga /Produk"
                                 outlined
                                 required
                                 v-model="
@@ -75,15 +75,16 @@
                                 "></v-text-field>
                               <v-text-field
                                 label="Jumlah Harga"
-                                hint="example of helper text only on focus"
+                                hint="Jumlah harga"
                                 outlined
                                 required
+                                disabled
                                 v-model="
                                   checkoutDataEntry.sumPrice
                                 "></v-text-field>
                               <v-text-field
                                 label="Diskon"
-                                hint="example of helper text only on focus"
+                                hint="Diskon"
                                 outlined
                                 required
                                 v-model="
@@ -91,15 +92,16 @@
                                 "></v-text-field>
                               <v-text-field
                                 label="Total Harga"
-                                hint="example of helper text only on focus"
+                                hint="Total Harga"
                                 outlined
+                                disabled
                                 required
                                 v-model="
                                   checkoutDataEntry.totalPrice
                                 "></v-text-field>
                               <v-text-field
                                 label="Bonus"
-                                hint="example of helper text only on focus"
+                                hint="Bonus"
                                 outlined
                                 required
                                 v-model="

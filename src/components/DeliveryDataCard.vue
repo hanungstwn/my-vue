@@ -16,10 +16,11 @@
                     label="Nama Ekspedisi"
                     v-model="users.deliveryData.expedition"
                     outlined
+                    disabled
                     required></v-text-field
                 ></v-col>
                 <v-col cols="12" sm="6" md="6"
-                  ><v-text-field label="Gudang" v-model="users.deliveryData.warehouse" outlined required></v-text-field
+                  ><v-text-field label="Gudang" v-model="users.deliveryData.warehouse" outlined disabled required></v-text-field
                 ></v-col>
               </v-row>
               <v-row>

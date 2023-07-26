@@ -2,29 +2,32 @@
   <v-app>
     <v-app-bar
       app
-      color="warning"
+      color="#7DCE13"
       dark
     >
+      <div class="d-flex align-center">
+        <v-img
+          alt="Vuetify Name"
+          class="shrink mt-1 hidden-sm-and-down"
+          contain
+          min-width="100"
+          src="./assets/BAGONK-white.png"
+          width="100"
+        />
+      </div>
+
+      <v-spacer></v-spacer>
+
       <div class="d-flex align-center">
         <v-img
           alt="GENAH Logo"
           class="shrink ml-4"
           contain
-          src="./assets/logo-gb.png"
+          src="./assets/logo-GB.webp"
           transition="scale-transition"
           width="40"
         />
-
-        <!-- <v-img
-          alt="Vuetify Name"
-          class="shrink mt-1 hidden-sm-and-down"
-          contain
-          min-width="100"
-          src="https://cdn.vuetifyjs.com/images/logos/vuetify-name-dark.png"
-          width="100"
-        /> -->
       </div>
-
       <v-spacer></v-spacer>
 
       <v-btn
@@ -52,3 +55,7 @@ export default {
   }),
 };
 </script>
+
+<style>
+
+</style>

@@ -68,8 +68,8 @@ export default {
           this.$swal({
             title: "Data Gagal Disimpan",
             icon: "error",
-            timer: 1500, // Set the time (in milliseconds) for the dialog to close automatically
-            showConfirmButton: false, // Hide the "OK" button
+            timer: 1500,
+            showConfirmButton: false,
           });
           this.validation = error.response.data.data;
         });

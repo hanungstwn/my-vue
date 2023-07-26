@@ -58,7 +58,7 @@ export default {};
 .ldio-ouqewxplmd div:nth-child(4) {
   top: 106.66666666666666px;
   left: 106.66666666666666px;
-  background: #f4f8f1;
+  background: #e4ffd1;
   animation-delay: -0.1s;
 }
 .loadingio-spinner-cube-ib351c5gug {
@@ -66,7 +66,7 @@ export default {};
   height: 200px;
   display: inline-block;
   overflow: hidden;
-  background: #ffffff;
+  /* background: #ffffff; */
 }
 .ldio-ouqewxplmd {
   width: 100%;

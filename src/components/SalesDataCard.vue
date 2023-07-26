@@ -15,6 +15,7 @@
                   v-model="users.salesData.csName"
                   @change="updateSalesData"
                   outlined
+                  disabled
                   required></v-text-field>
               </v-col>
               <v-col cols="12" sm="4" md="4">
@@ -23,6 +24,7 @@
                   v-model="users.salesData.advName"
                   @change="updateSalesData"
                   outlined
+                  disabled
                   required></v-text-field>
               </v-col>
               <v-col cols="12" sm="4" md="4">
