@@ -2,7 +2,7 @@
   <v-app>
     <v-app-bar
       app
-      color="#7DCE13"
+      color="#84d444"
       dark
     >
       <div class="d-flex align-center">
@@ -23,7 +23,7 @@
           alt="GENAH Logo"
           class="shrink ml-4"
           contain
-          src="./assets/logo-GB.webp"
+          src="./assets/logo-fo.png"
           transition="scale-transition"
           width="40"
         />

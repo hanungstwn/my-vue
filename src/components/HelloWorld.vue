@@ -76,22 +76,30 @@
         <v-chip v-else color="error"> Salah </v-chip>
       </template>
 
+      <template v-slot:item.isExported="{ item }">
+        <v-icon v-if="item.isExported" size="x-large" color="#1B5E20">mdi-file-check</v-icon>
+        <v-icon v-else size="x-large" color="#D50000">mdi-file-excel</v-icon>
+      </template>
+
       <template v-slot:item.actions="{ item }">
         <!-- Check if the data is exported and update the action buttons accordingly -->
-        <!-- <v-icon v-if="item.isDataExported" color="success"
+        <v-icon v-if="item.isExported" color="success"
           >mdi-checkbox-marked-circle</v-icon
-        > -->
-        <router-link :to="`/orders/${item.id}/details`">
-          <v-btn small icon>
-            <v-icon size="x-large" color="warning">mdi-pencil-circle</v-icon>
-          </v-btn>
-        </router-link>
-        <router-link :to="`/orders/${item.id}`">
-          <v-btn small icon @click="confirmDeleteData(item)">
-            <v-icon size="x-large" color="error">mdi-close-circle</v-icon>
-          </v-btn>
-        </router-link>
+        >
+        <template v-else>
+          <router-link :to="`/orders/${item.id}/details`">
+            <v-btn small icon>
+              <v-icon size="x-large" color="warning">mdi-pencil-circle</v-icon>
+            </v-btn>
+          </router-link>
+          <router-link :to="`/orders/${item.id}`">
+            <v-btn small icon @click="confirmDeleteData(item)">
+              <v-icon size="x-large" color="error">mdi-delete-circle</v-icon>
+            </v-btn>
+          </router-link>
+        </template>
       </template>
+
     </v-data-table>
   </v-card>
 </template>
@@ -115,6 +123,7 @@ export default {
       endDate: null,
       dialog: false,
       selectedExpedition: null,
+      custName: "",
       selected: [],
       expeditions: [
         {
@@ -147,8 +156,8 @@ export default {
           value: "deliveryData.expedition",
         },
         { text: "Status", value: "isValidOrder" },
-        { text: "Action", value: "actions" },
         { text: "Export", value: "isExported" },
+        { text: "Action", value: "actions" },
       ],
       users: [],
       invalidDates: false,
@@ -178,9 +187,9 @@ export default {
         });
       }
 
-      // this.users.forEach((user) => {
-      //   user.isExported = this.isDataExported(user);
-      // });
+      this.users.forEach((user) => {
+        user.isExported = this.isDataExported(user);
+      });
 
       // Jika tidak ada ekspedisi yang dipilih, kembalikan semua data dengan penyaringan tanggal
       return this.users.filter((user) => {
@@ -322,7 +331,6 @@ export default {
           document.body.removeChild(anchor);
 
           window.URL.revokeObjectURL(downloadLink);
-          // this.updateDataExportStatus(this.filteredItems);
         })
         .catch((error) => {
           this.$swal({
@@ -335,41 +343,98 @@ export default {
         });
     },
 
-  //   updateDataExportStatus(itemsToUpdate) {
-  //   // Buat array yang berisi id dari item yang akan diubah
-  //   const idsToUpdate = itemsToUpdate.map((item) => item.id);
+    isDataExported() {
+      if (!this.startDate || !this.endDate || this.invalidDates) {
+        return;
+      }
 
-  //   // Lakukan permintaan PATCH untuk setiap id
-  //   const updatePromises = idsToUpdate.map((id) => {
-  //     return axios.patch(`http://localhost:8080/orders/${id}`, {
-  //       isExported: true,
-  //       // Jika ada field lain yang perlu diperbarui, tambahkan di sini
-  //     });
-  //   });
+      const filteredItems = this.filteredItems;
+      const updatePromises = [];
 
-  //   // Tunggu semua permintaan selesai
-  //   Promise.all(updatePromises)
-  //     .then((responses) => {
-  //       // Proses hasil dari permintaan PATCH jika diperlukan
-  //       responses.forEach((response, index) => {
-  //         const id = idsToUpdate[index];
-  //         const updatedItem = itemsToUpdate.find((item) => item.id === id);
-  //         if (updatedItem) {
-  //           updatedItem.isExported = true; // Ubah nilai isExported menjadi true
-  //         }
-  //       });
-  //     })
-  //     .catch((error) => {
-  //       console.error("Error updating isExported:", error);
-  //       // Cetak pesan kesalahan dari server
-  //       if (error.response && error.response.data) {
-  //         console.error("Server response:", error.response.data);
-  //       }
-  //     });
-  // },
+      const idsToUpdate = filteredItems.map((item) => item.id);
+
+      // Lakukan permintaan PATCH untuk setiap id
+      idsToUpdate.forEach((id) => {
+        const itemToUpdate = {
+          id,
+          isExported: true,
+          customerData: {
+            custName: filteredItems.find((item) => item.id === id).customerData
+              .custName,
+            custWhatsapp: filteredItems.find((item) => item.id === id)
+              .customerData.custWhatsapp,
+            roCount: filteredItems.find((item) => item.id === id).customerData
+              .roCount,
+            district: filteredItems.find((item) => item.id === id).customerData
+              .district,
+            regency: filteredItems.find((item) => item.id === id).customerData
+              .regency,
+            fullAddress: filteredItems.find((item) => item.id === id)
+              .customerData.fullAddress,
+          },
+          checkoutData: filteredItems.find((item) => item.id === id)
+            .checkoutData,
+          deliveryData: {
+            expedition: filteredItems.find((item) => item.id === id)
+              .deliveryData.expedition,
+            warehouse: filteredItems.find((item) => item.id === id).deliveryData
+              .warehouse,
+            deliveryFee: filteredItems.find((item) => item.id === id)
+              .deliveryData.deliveryFee,
+            handlingFee: filteredItems.find((item) => item.id === id)
+              .deliveryData.handlingFee,
+            deliveryDiscount: filteredItems.find((item) => item.id === id)
+              .deliveryData.deliveryDiscount,
+          },
+          salesData: {
+            csName: filteredItems.find((item) => item.id === id).salesData
+              .csName,
+            advName: filteredItems.find((item) => item.id === id).salesData
+              .advName,
+            sourceAds: filteredItems.find((item) => item.id === id).salesData
+              .sourceAds,
+          },
+          totalProductCost: filteredItems.find((item) => item.id === id)
+            .totalProductCost,
+          totalProductDiscount: filteredItems.find((item) => item.id === id)
+            .totalProductDiscount,
+
+          totalDeliveryCost: filteredItems.find((item) => item.id === id)
+            .totalDeliveryCost,
+
+          totalDeliveryDiscount: filteredItems.find((item) => item.id === id)
+            .totalDeliveryDiscount,
+          totalPayment: filteredItems.find((item) => item.id === id)
+            .totalPayment,
+
+          paymentMethod: filteredItems.find((item) => item.id === id)
+            .paymentMethod,
+        };
+
+        const promise = axios.patch(
+          `http://localhost:8080/orders/${id}`,
+          itemToUpdate
+        );
+        updatePromises.push(promise);
+      });
+
+      Promise.all(updatePromises)
+        .then((responses) => {
+          responses.forEach((response, index) => {
+            const id = idsToUpdate[index];
+            const updatedItem = filteredItems.find((item) => item.id === id);
+            if (updatedItem) {
+              updatedItem.isExported = true;
+            }
+          });
+        })
+        .catch((error) => {
+          console.error("Error updating isExported:", error);
+        });
+    },
 
     filterByExpedition() {
-      this.validateDates(); // Pastikan tanggal yang dipilih masih valid
+      this.validateDates();
     },
   },
   watch: {

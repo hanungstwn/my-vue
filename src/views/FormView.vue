@@ -60,7 +60,12 @@ export default {
       axios
         .patch("http://localhost:8080/orders/" + this.users.id, this.users)
         .then((response) => {
-          this.$swal("Data Berhasil Disimpan");
+          this.$swal({
+            title: "Data Berhasil Disimpan",
+            icon: "success",
+            timer: 1500,
+            showConfirmButton: false,
+          });
           console.log(response);
           this.$router.push({ name: "home" });
         })

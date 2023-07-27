@@ -16,12 +16,6 @@
                   hint="Customer Name"
                   outlined
                   required
-                  v-model="users.isExported"></v-text-field>
-                <v-text-field
-                  label="Nama Customer"
-                  hint="Customer Name"
-                  outlined
-                  required
                   v-model="users.customerData.custName"></v-text-field>
               </v-col>
               <v-col cols="12" sm="6" md="6">
