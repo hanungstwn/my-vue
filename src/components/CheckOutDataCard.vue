@@ -165,14 +165,60 @@ export default {
         })
         .catch((error) => console.log(error));
     },
-    updateCheckOutData() {
 
-      this.$emit("users-updated", this.users);
+    calculateSumPrice(checkoutDataEntry) {
+      if (checkoutDataEntry.pricePerProduct && checkoutDataEntry.quantity) {
+        checkoutDataEntry.sumPrice =
+          checkoutDataEntry.pricePerProduct * checkoutDataEntry.quantity;
+      } else {
+        checkoutDataEntry.sumPrice = null; // Handle jika salah satu atau kedua field belum terisi
+      }
     },
+
+    calculateTotalPrice(checkoutDataEntry) {
+      if (checkoutDataEntry.sumPrice && checkoutDataEntry.discount) {
+        checkoutDataEntry.totalPrice =
+          checkoutDataEntry.sumPrice - checkoutDataEntry.discount;
+      } else {
+        checkoutDataEntry.totalPrice = null; // Handle jika salah satu atau kedua field belum terisi
+      }
+    },
+
+    calculateWeightTotal(checkoutDataEntry) {
+      if (checkoutDataEntry.quantity && checkoutDataEntry.weightPerProduct) {
+        checkoutDataEntry.weightTotal =
+          checkoutDataEntry.quantity * checkoutDataEntry.weightPerProduct;
+      } else {
+        checkoutDataEntry.weightTotal = null; // Handle jika salah satu atau kedua field belum terisi
+      }
+    },
+
+    updateCheckOutData() {
+    this.users.checkoutData.forEach((entry, index) => {
+      this.calculateSumPrice(entry);
+      this.calculateTotalPrice(entry);
+      this.calculateWeightTotal(entry);
+    });
+
+    this.$emit("users-updated", this.users);
+  },
     hideSkeleton() {
       setTimeout(() => {
         this.isLoading = false;
       }, 3000);
+    },
+  },
+
+  watch: {
+    "users.checkoutData": {
+      deep: true,
+      handler(newCheckoutData, oldCheckoutData) {
+        newCheckoutData.forEach((entry, index) => {
+          this.calculateSumPrice(entry);
+          this.calculateTotalPrice(entry);
+          this.calculateWeightTotal(entry);
+        });
+      },
     },
   },
 };

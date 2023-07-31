@@ -6,10 +6,7 @@
         variant="tonal"
         color="#1D6F42"
         class="me-4"
-        @click="
-          exportData();
-          isDataExported();
-        "
+        @click="handleExportButtonClick"
         >Export</v-btn
       >
       <div class="date-input">
@@ -50,6 +47,18 @@
           variant="underlined"
           @change="filterByExpedition"></v-select>
       </div>
+      <div class="date-input">
+        <v-select
+          clearable
+          v-model="selectedWarehouse"
+          label="Warehouse"
+          :items="warehouse"
+          class="custom-select-field"
+          item-text="warehouse"
+          item-value="exid"
+          variant="underlined"
+          @change="filterByExpedition"></v-select>
+      </div>
       <v-spacer></v-spacer>
       <v-spacer></v-spacer>
       <v-text-field
@@ -77,7 +86,9 @@
       </template>
 
       <template v-slot:item.isExported="{ item }">
-        <v-icon v-if="item.isExported" size="x-large" color="#1B5E20">mdi-file-check</v-icon>
+        <v-icon v-if="item.isExported" size="x-large" color="#1B5E20"
+          >mdi-file-check</v-icon
+        >
         <v-icon v-else size="x-large" color="#D50000">mdi-file-excel</v-icon>
       </template>
 
@@ -99,7 +110,6 @@
           </router-link>
         </template>
       </template>
-
     </v-data-table>
   </v-card>
 </template>
@@ -123,6 +133,7 @@ export default {
       endDate: null,
       dialog: false,
       selectedExpedition: null,
+      selectedWarehouse: null,
       custName: "",
       selected: [],
       expeditions: [
@@ -139,6 +150,20 @@ export default {
           exid: "sicepat",
         },
       ],
+      warehouse: [
+        {
+          warehouse: "Kosambi",
+          exid: "kosambi",
+        },
+        {
+          warehouse: "Tandes",
+          exid: "tandes",
+        },
+        {
+          warehouse: "Cilacap",
+          exid: "cilacap",
+        },
+      ],
       headers: [
         {
           align: "center",
@@ -149,12 +174,13 @@ export default {
           text: "Nama Customer",
           value: "customerData.custName",
         },
-        { text: "Alamat", value: "customerData.fullAddress" },
+        // { text: "Alamat", value: "customerData.fullAddress" },
         { text: "Tanggal", value: "createdAtLocal" },
         {
           text: "Ekspedisi",
           value: "deliveryData.expedition",
         },
+        { text: "Gudang", value: "deliveryData.warehouse" },
         { text: "Status", value: "isValidOrder" },
         { text: "Export", value: "isExported" },
         { text: "Action", value: "actions" },
@@ -165,61 +191,116 @@ export default {
   },
   computed: {
     filteredItems() {
-      // console.log("this.users:", this.users);
-      // Jika startDate, endDate, atau invalidDates true, kembalikan semua data tanpa penyaringan
+      // If startDate, endDate, or invalidDates is true, return all data without filtering
       if (!this.startDate || !this.endDate || this.invalidDates) {
         return this.users;
       }
 
-      // Jika ada ekspedisi yang dipilih, saring data berdasarkan ekspedisi
-      if (this.selectedExpedition) {
+      // Apply filters based on selectedExpedition and selectedWarehouse (if selected)
+      if (this.selectedExpedition && this.selectedWarehouse) {
         return this.users.filter((user) => {
           const itemDate = new Date(user.createdAtLocal);
           const start = new Date(this.startDate);
           const end = new Date(this.endDate);
 
-          // Saring berdasarkan ekspedisi yang dipilih
+          // Filter based on both selectedExpedition and selectedWarehouse
+          return (
+            itemDate >= start &&
+            itemDate <= end &&
+            user.deliveryData.expedition === this.selectedExpedition &&
+            user.deliveryData.warehouse === this.selectedWarehouse
+          );
+        });
+      } else if (this.selectedExpedition) {
+        // Filter based on only selectedExpedition
+        return this.users.filter((user) => {
+          const itemDate = new Date(user.createdAtLocal);
+          const start = new Date(this.startDate);
+          const end = new Date(this.endDate);
+
           return (
             itemDate >= start &&
             itemDate <= end &&
             user.deliveryData.expedition === this.selectedExpedition
           );
         });
+      } else if (this.selectedWarehouse) {
+        // Filter based on only selectedWarehouse
+        return this.users.filter((user) => {
+          const itemDate = new Date(user.createdAtLocal);
+          const start = new Date(this.startDate);
+          const end = new Date(this.endDate);
+
+          return (
+            itemDate >= start &&
+            itemDate <= end &&
+            user.deliveryData.warehouse === this.selectedWarehouse
+          );
+        });
+      } else {
+        // If no expedition or warehouse selected, apply only date filter
+        this.users.forEach((user) => {
+          user.isExported = this.isDataExported(user);
+        });
+
+        return this.users.filter((user) => {
+          const itemDate = new Date(user.createdAtLocal);
+          const start = new Date(this.startDate);
+          const end = new Date(this.endDate);
+          return itemDate >= start && itemDate <= end;
+        });
       }
-
-      this.users.forEach((user) => {
-        user.isExported = this.isDataExported(user);
-      });
-
-      // Jika tidak ada ekspedisi yang dipilih, kembalikan semua data dengan penyaringan tanggal
-      return this.users.filter((user) => {
-        const itemDate = new Date(user.createdAtLocal);
-        const start = new Date(this.startDate);
-        const end = new Date(this.endDate);
-        return itemDate >= start && itemDate <= end;
-      });
     },
   },
   methods: {
     getData() {
       const URL = "http://localhost:8080/orders";
-      axios.get(URL).then((res) => {
-        this.users = res.data.data;
-        this.users.forEach((user, index) => {
-          user.no = index + 1;
+      this.users = [];
+      axios
+        .get(URL)
+        .then((res) => {
+          // console.log("Response Data:", res.data); // Log the response data to check its structure
 
-          // Ubah format UTC menjadi waktu lokal Indonesia (+7 jam)
-          const createdAtLocal = moment
-            .utc(user.createdAt)
-            .utcOffset("+0700")
-            .format("DD MMMM YYYY, HH:mm");
+          if (!res.data || !res.data.data || res.data.data.length === 0) {
+            // Tampilkan pesan kesalahan jika tidak ada data yang diterima dari server API
+            console.log("No data received.");
+            // Atau tampilkan pesan kesalahan menggunakan swal
+            this.$swal({
+              title: "Tidak ada data yang ditemukan",
+              icon: "error",
+              timer: 1500,
+              showConfirmButton: false,
+            });
+            return;
+          }
 
-          console.log(createdAtLocal);
+          this.users = res.data.data;
+          this.users.forEach((user, index) => {
+            user.no = index + 1;
 
-          // Tambahkan properti baru ke user untuk menyimpan createdAt dalam format waktu lokal
-          user.createdAtLocal = createdAtLocal;
+            // Ubah format UTC menjadi waktu lokal Indonesia (+7 jam)
+            const createdAtLocal = moment
+              .utc(user.createdAt)
+              .utcOffset("+0700")
+              .format("DD MMMM YYYY, HH:mm");
+
+            // console.log(createdAtLocal);
+
+            // Tambahkan properti baru ke user untuk menyimpan createdAt dalam format waktu lokal
+            user.createdAtLocal = createdAtLocal;
+          });
+        })
+        .catch((error) => {
+          console.error("Error fetching data:", error);
+          // Tampilkan pesan kesalahan jika terjadi kesalahan saat mengambil data dari server API
+          this.$swal({
+            title: "Error fetching data",
+            text: "Terjadi kesalahan saat mengambil data dari server API",
+            icon: "error",
+            timer: 1500,
+            showConfirmButton: false,
+          });
         });
-      });
     },
 
     confirmDeleteData(user) {
@@ -269,171 +350,108 @@ export default {
       }
     },
 
-    exportData() {
-      const defaultStartDate = "1970-01-01T00:00";
-      const defaultEndDate = moment().format("YYYY-MM-DDTHH:mm");
+    async exportData() {
+      const filteredData = this.filteredItems;
 
-      // Format start and end dates for the API request
-      const formattedStartDate = this.startDate
-        ? moment(this.startDate).format("YYYY-MM-DDTHH:mm")
-        : defaultStartDate;
-
-      const formattedEndDate = this.endDate
-        ? moment(this.endDate).format("YYYY-MM-DDTHH:mm")
-        : defaultEndDate;
-
-      // Prepare the selected expedition for the API request
-      const selectedExpedition = this.selectedExpedition
-        ? this.selectedExpedition
-        : "";
-
-      // Check if both start date and end date are set and an expedition is selected before exporting data
-      if (!this.startDate || !this.endDate || !selectedExpedition) {
+      if (filteredData.length === 0) {
+        // Show a warning message if there is no data to export
         this.$swal({
-          title: "Pilih Tanggal & Ekspedisi !",
+          title: "Tidak ada data yang sesuai dengan filter",
+          icon: "warning",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+        return;
+      }
+
+      // Show a confirmation dialog before exporting
+      const confirmExport = await Swal.fire({
+        title: "Apakah Anda yakin ingin mengekspor data?",
+        icon: "info",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes",
+        cancelButtonText: "No",
+      });
+
+      if (!confirmExport.isConfirmed) {
+        return; // User canceled the export
+      }
+
+      // Lakukan permintaan ke server API untuk mengubah nilai isExported menjadi true
+      try {
+        await Promise.all(
+          filteredData.map(async (item) => {
+            const id = item.id;
+            await axios.patch(`http://localhost:8080/orders/${id}`, {
+              isExported: true,
+              customerData: {
+                custName: item.customerData.custName,
+                custWhatsapp: item.customerData.custWhatsapp,
+                roCount: item.customerData.roCount,
+                district: item.customerData.district,
+                regency: item.customerData.regency,
+                province: item.customerData.fullAddress,
+                fullAddress: item.customerData.fullAddress,
+              },
+              checkoutData: item.checkoutData,
+              deliveryData: {
+                expedition: item.deliveryData.expedition,
+                warehouse: item.deliveryData.warehouse,
+                deliveryFee: item.deliveryData.deliveryFee,
+                handlingFee: item.deliveryData.handlingFee,
+                deliveryDiscount: item.deliveryData.deliveryDiscount,
+              },
+              salesData: {
+                csName: item.salesData.csName,
+                advName: item.salesData.advName,
+                sourceAds: item.salesData.sourceAds,
+              },
+              totalProductCost: item.totalProductCost,
+              totalProductDiscount: item.totalProductDiscount,
+              totalDeliveryCost: item.totalDeliveryCost,
+              totalDeliveryDiscount: item.totalDeliveryDiscount,
+              totalPayment: item.totalPayment,
+              paymentMethod: item.paymentMethod,
+            });
+          })
+        );
+
+        // Tampilkan pesan bahwa data berhasil di-eksport
+        this.$swal({
+          title: "Data berhasil di-eksport",
+          icon: "success",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+
+        // Update data yang ditampilkan di tabel dengan data terbaru setelah isExported diubah menjadi true
+        this.getData();
+      } catch (error) {
+        console.error("Error exporting data:", error);
+        // Tampilkan pesan kesalahan jika terjadi kesalahan saat mengubah data pada server API
+        this.$swal({
+          title: "Error exporting data",
+          text: "Terjadi kesalahan saat mengubah data pada server API",
           icon: "error",
           timer: 1500,
           showConfirmButton: false,
         });
-        return; // Stop the export process if dates and/or expedition are not selected
       }
-
-      const baseURL = "http://localhost:8080/orders/generate";
-      const params = {
-        timeStart: formattedStartDate,
-        timeEnd: formattedEndDate,
-        expedition: selectedExpedition,
-      };
-      const queryString = new URLSearchParams(params).toString();
-      const URL = `${baseURL}?${queryString}`;
-
-      axios({
-        url: URL,
-        method: "GET",
-        responseType: "blob",
-        headers: {},
-      })
-        .then((res) => {
-          const blob = new Blob([res.data], {
-            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-          });
-
-          const currentDate = moment().format("YYYY-MM-DD");
-          const currentTime = moment().format("HHmmss");
-          const fileName = `orders_${currentDate}_${currentTime}.xlsx`;
-
-          const downloadLink = window.URL.createObjectURL(blob);
-          const anchor = document.createElement("a");
-          anchor.href = downloadLink;
-          anchor.download = fileName;
-          document.body.appendChild(anchor);
-          anchor.click();
-          document.body.removeChild(anchor);
-
-          window.URL.revokeObjectURL(downloadLink);
-        })
-        .catch((error) => {
-          this.$swal({
-            title: "Error, data gagal dieksport",
-            icon: "error",
-            timer: 1500,
-            showConfirmButton: false,
-          });
-          console.error("Error exporting data:", error);
-        });
     },
 
-    isDataExported() {
-      if (!this.startDate || !this.endDate || this.invalidDates) {
-        return;
-      }
-
-      const filteredItems = this.filteredItems;
-      const updatePromises = [];
-
-      const idsToUpdate = filteredItems.map((item) => item.id);
-
-      // Lakukan permintaan PATCH untuk setiap id
-      idsToUpdate.forEach((id) => {
-        const itemToUpdate = {
-          id,
-          isExported: true,
-          customerData: {
-            custName: filteredItems.find((item) => item.id === id).customerData
-              .custName,
-            custWhatsapp: filteredItems.find((item) => item.id === id)
-              .customerData.custWhatsapp,
-            roCount: filteredItems.find((item) => item.id === id).customerData
-              .roCount,
-            district: filteredItems.find((item) => item.id === id).customerData
-              .district,
-            regency: filteredItems.find((item) => item.id === id).customerData
-              .regency,
-            fullAddress: filteredItems.find((item) => item.id === id)
-              .customerData.fullAddress,
-          },
-          checkoutData: filteredItems.find((item) => item.id === id)
-            .checkoutData,
-          deliveryData: {
-            expedition: filteredItems.find((item) => item.id === id)
-              .deliveryData.expedition,
-            warehouse: filteredItems.find((item) => item.id === id).deliveryData
-              .warehouse,
-            deliveryFee: filteredItems.find((item) => item.id === id)
-              .deliveryData.deliveryFee,
-            handlingFee: filteredItems.find((item) => item.id === id)
-              .deliveryData.handlingFee,
-            deliveryDiscount: filteredItems.find((item) => item.id === id)
-              .deliveryData.deliveryDiscount,
-          },
-          salesData: {
-            csName: filteredItems.find((item) => item.id === id).salesData
-              .csName,
-            advName: filteredItems.find((item) => item.id === id).salesData
-              .advName,
-            sourceAds: filteredItems.find((item) => item.id === id).salesData
-              .sourceAds,
-          },
-          totalProductCost: filteredItems.find((item) => item.id === id)
-            .totalProductCost,
-          totalProductDiscount: filteredItems.find((item) => item.id === id)
-            .totalProductDiscount,
-
-          totalDeliveryCost: filteredItems.find((item) => item.id === id)
-            .totalDeliveryCost,
-
-          totalDeliveryDiscount: filteredItems.find((item) => item.id === id)
-            .totalDeliveryDiscount,
-          totalPayment: filteredItems.find((item) => item.id === id)
-            .totalPayment,
-
-          paymentMethod: filteredItems.find((item) => item.id === id)
-            .paymentMethod,
-        };
-
-        const promise = axios.patch(
-          `http://localhost:8080/orders/${id}`,
-          itemToUpdate
-        );
-        updatePromises.push(promise);
-      });
-
-      Promise.all(updatePromises)
-        .then((responses) => {
-          responses.forEach((response, index) => {
-            const id = idsToUpdate[index];
-            const updatedItem = filteredItems.find((item) => item.id === id);
-            if (updatedItem) {
-              updatedItem.isExported = true;
-            }
-          });
-        })
-        .catch((error) => {
-          console.error("Error updating isExported:", error);
-        });
+    handleExportButtonClick() {
+      // Panggil fungsi exportData untuk mengubah nilai isExported menjadi true
+      this.exportData();
     },
 
     filterByExpedition() {
+      this.validateDates();
+    },
+
+    filterByWarehouse() {
+      // this.exportData();
       this.validateDates();
     },
   },

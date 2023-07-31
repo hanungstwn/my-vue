@@ -2,10 +2,11 @@
   <div>
     <CustomerData v-bind:users="users" v-on:users-loaded="users = $event" />
     <!-- <CustomerData /> -->
-    <CheckOutData v-bind:users="users" v-on:users-loaded="users = $event" />
+    <!-- <CheckOutData v-bind:users="users" v-on:users-loaded="users = $event" /> -->
     <SalesData v-bind:users="users" v-on:users-loaded="users = $event" />
-    <DeliveryData v-bind:users="users" v-on:users-loaded="users = $event" />
-    <TotalData v-bind:users="users" v-on:users-loaded="users = $event" />
+    <CoDelivTotal v-bind:users="users" v-on:users-loaded="users = $event" />
+    <!-- <DeliveryData v-bind:users="users" v-on:users-loaded="users = $event" /> -->
+    <!-- <TotalData v-bind:users="users" v-on:users-loaded="users = $event" /> -->
     <v-container class="button-wrapper">
       <v-skeleton-loader v-if="isLoading"></v-skeleton-loader>
       <v-btn
@@ -26,19 +27,21 @@
 import axios from "axios";
 import VueSweetalert2 from "vue-sweetalert2";
 import CustomerData from "../components/CustomerDataCard.vue";
-import CheckOutData from "../components/CheckOutDataCard.vue";
 import SalesData from "../components/SalesDataCard";
-import DeliveryData from "../components/DeliveryDataCard.vue";
-import TotalData from "../components/TotalDataCard.vue";
+import CoDelivTotal from "../components/CoDelivTotal.vue";
+// import CheckOutData from "../components/CheckOutDataCard.vue";
+// import DeliveryData from "../components/DeliveryDataCard.vue";
+// import TotalData from "../components/TotalDataCard.vue";
 
 export default {
   name: "FormView",
   components: {
     CustomerData,
-    CheckOutData,
     SalesData,
-    DeliveryData,
-    TotalData,
+    CoDelivTotal,
+    // CheckOutData,
+    // DeliveryData,
+    // TotalData,
     VueSweetalert2,
   },
   data() {
