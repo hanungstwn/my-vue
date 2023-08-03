@@ -354,7 +354,7 @@ export default {
       const filteredData = this.filteredItems;
 
       if (filteredData.length === 0) {
-        // Show a warning message if there is no data to export
+        // Tampilkan pesan jika tidak ada data yang sesuai dengan filter
         this.$swal({
           title: "Tidak ada data yang sesuai dengan filter",
           icon: "warning",
@@ -364,27 +364,53 @@ export default {
         return;
       }
 
-      // Show a confirmation dialog before exporting
-      const confirmExport = await Swal.fire({
-        title: "Apakah Anda yakin ingin mengekspor data?",
-        icon: "info",
-        showCancelButton: true,
-        confirmButtonColor: "#3085d6",
-        cancelButtonColor: "#d33",
-        confirmButtonText: "Yes",
-        cancelButtonText: "No",
-      });
-
-      if (!confirmExport.isConfirmed) {
-        return; // User canceled the export
-      }
-
-      // Lakukan permintaan ke server API untuk mengubah nilai isExported menjadi true
       try {
+        //format waktu GMT
+        const formattedStartDate = this.startDate
+          ? moment(this.startDate).utc().format("YYYY-MM-DDTHH:mm")
+          : "";
+        const formattedEndDate = this.endDate
+          ? moment(this.endDate).utc().format("YYYY-MM-DDTHH:mm")
+          : "";
+
+        // format waktu indonesia
+        // const formattedStartDate = this.startDate
+        //   ? moment(this.startDate).format("YYYY-MM-DDTHH:mm")
+        //   : "";
+        // const formattedEndDate = this.endDate
+        //   ? moment(this.endDate).format("YYYY-MM-DDTHH:mm")
+        //   : "";
+
+        const selectedExpedition = this.selectedExpedition
+          ? this.selectedExpedition
+          : "";
+        const selectedWarehouse = this.selectedWarehouse
+          ? this.selectedWarehouse
+          : "";
+
+        const params = {
+          expedition: selectedExpedition,
+          warehouse: selectedWarehouse,
+          timeStart: formattedStartDate,
+          timeEnd: formattedEndDate,
+        };
+
+        const queryString = new URLSearchParams(params).toString();
+        const baseURL = "http://localhost:8080/orders/generate";
+        const URL = `${baseURL}?${queryString}`;
+        const res = await axios({
+          url: URL,
+          method: "GET",
+          responseType: "blob",
+          headers: {},
+        });
+
+        // Data is downloaded successfully, now update the isExported property
         await Promise.all(
           filteredData.map(async (item) => {
             const id = item.id;
             await axios.patch(`http://localhost:8080/orders/${id}`, {
+              // ... (your existing data properties)
               isExported: true,
               customerData: {
                 custName: item.customerData.custName,
@@ -428,6 +454,22 @@ export default {
 
         // Update data yang ditampilkan di tabel dengan data terbaru setelah isExported diubah menjadi true
         this.getData();
+
+        const blob = new Blob([res.data], {
+          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        });
+        const downloadLink = window.URL.createObjectURL(blob);
+        const anchor = document.createElement("a");
+        anchor.href = downloadLink;
+        const filename = `orders_${selectedExpedition}_${selectedWarehouse}_${moment().format(
+          "YYYY-MM-DD_HHmmss"
+        )}`;
+        anchor.download = `${filename}.xlsx`;
+        document.body.appendChild(anchor);
+        anchor.click();
+        document.body.removeChild(anchor);
+        // Clean up
+        window.URL.revokeObjectURL(downloadLink);
       } catch (error) {
         console.error("Error exporting data:", error);
         // Tampilkan pesan kesalahan jika terjadi kesalahan saat mengubah data pada server API
@@ -440,7 +482,6 @@ export default {
         });
       }
     },
-
     handleExportButtonClick() {
       // Panggil fungsi exportData untuk mengubah nilai isExported menjadi true
       this.exportData();

@@ -131,33 +131,44 @@
               <div v-else>
                 <h2 class="text-center mt-4 mb-10">Delivery Data</h2>
                 <v-row>
-                  <v-col cols="12" sm="4" md="4"
-                    ><v-autocomplete
+                  <v-col cols="12" sm="6" md="6">
+                    <v-autocomplete
                       clearable
                       label="Ekspedisi"
                       v-model="users.deliveryData.expedition"
                       :items="expeditions"
                       item-value="exid"
                       item-text="expedition"
-                      outlined></v-autocomplete
-                  ></v-col>
-                  <v-col cols="12" sm="4" md="4"
-                    ><v-autocomplete
+                      outlined></v-autocomplete>
+                  </v-col>
+                  <v-col cols="12" sm="6" md="6">
+                    <v-autocomplete
                       clearable
                       label="Gudang"
                       v-model="users.deliveryData.warehouse"
                       :items="warehouse"
                       item-value="exid"
                       item-text="warehouse"
-                      outlined></v-autocomplete
-                  ></v-col>
-                  <v-col cols="12" sm="4" md="4"
-                    ><v-autocomplete
+                      outlined></v-autocomplete>
+                  </v-col>
+                </v-row>
+                <v-row>
+                  <v-col cols="12" sm="6" md="6">
+                    <v-text-field
                       clearable
-                      label="Kecamatan Tujuan"
-                      :items="['Jnt', 'Ninja', 'Sicepat']"
-                      outlined></v-autocomplete
-                  ></v-col>
+                      label="Kabupaten"
+                      v-model="users.customerData.regency"
+                      outlined
+                      disabled></v-text-field>
+                  </v-col>
+                  <v-col cols="12" sm="6" md="6">
+                    <v-autocomplete
+                      clearable
+                      label="Kecamatan"
+                      v-model="users.deliveryData.district"
+                      :items="districts"
+                      outlined></v-autocomplete>
+                  </v-col>
                 </v-row>
                 <v-row>
                   <v-col cols="12" sm="4" md="4"
@@ -167,7 +178,7 @@
                       outlined
                       required
                       disabled
-                      @input="calculateTotalDeliveryCost"></v-text-field
+                      @input="calculateTotalDelivery"></v-text-field
                   ></v-col>
                   <v-col cols="12" sm="4" md="4"
                     ><v-text-field
@@ -183,7 +194,7 @@
                       v-model="users.deliveryData.deliveryDiscount"
                       outlined
                       required
-                      @input="calculateTotalDeliveryCost"></v-text-field
+                      @input="calculateTotalDelivery"></v-text-field
                   ></v-col>
                 </v-row>
               </div>
@@ -263,14 +274,14 @@
 <script>
 import axios from "axios";
 import jnt_cilacap_json from "../json/jnt/jnt_cilacap.json";
-// import json from "../json/jnt/jnt_kosambi.json";
-// import json from "../json/jnt/jnt_tandes.json";
-// import json from "../json/ninja/ninja_cilacap.json";
-// import json from "../json/ninja/ninja_kosambi.json";
-// import json from "../json/ninja/ninja_tandes.json";
-// import json from "../json/sicepat/sicepat_cilacap.json";
-// import json from "../json/sicepat/sicepat_kosambi.json";
-// import json from "../json/sicepat/sicepat_tandes.json";
+import jnt_kosambi_json from "../json/jnt/jnt_kosambi.json";
+import jnt_tandes_json from "../json/jnt/jnt_tandes.json";
+import ninja_cilacap_json from "../json/ninja/ninja_cilacap.json";
+import ninja_kosambi_json from "../json/ninja/ninja_kosambi.json";
+import ninja_tandes_json from "../json/ninja/ninja_tandes.json";
+import sicepat_cilacap_json from "../json/sicepat/sicepat_cilacap.json";
+import sicepat_kosambi_json from "../json/sicepat/sicepat_kosambi.json";
+import sicepat_tandes_json from "../json/sicepat/sicepat_tandes.json";
 
 export default {
   name: "CoDelivTotal",
@@ -284,9 +295,19 @@ export default {
 
   data() {
     return {
-      jnt_cilacap_json: jnt_cilacap_json, // Or whichever JSON data you want to use.
+      jnt_cilacap_json: jnt_cilacap_json,
+      jnt_kosambi_json: jnt_kosambi_json,
+      jnt_tandes_json: jnt_tandes_json,
+      ninja_cilacap_json: ninja_cilacap_json,
+      ninja_kosambi_json: ninja_kosambi_json,
+      ninja_tandes_json: ninja_tandes_json,
+      sicepat_cilacap_json: sicepat_cilacap_json,
+      sicepat_kosambi_json: sicepat_kosambi_json,
+      sicepat_tandes_json: sicepat_tandes_json,
       isLoading: true,
       text: "",
+      districts: [],
+      selectedData: null,
       selectedExpedition: null,
       selectedWarehouse: null,
       expeditions: [
@@ -325,6 +346,15 @@ export default {
     this.fetchData();
     this.calculateTotalProductCost();
     this.calculateDiscountAllProduct();
+    this.districts = this.jnt_cilacap_json.map((item) => item.district);
+    this.districts = this.jnt_kosambi_json.map((item) => item.district);
+    this.districts = this.jnt_tandes_json.map((item) => item.district);
+    this.districts = this.ninja_cilacap_json.map((item) => item.district);
+    this.districts = this.ninja_kosambi_json.map((item) => item.district);
+    this.districts = this.ninja_tandes_json.map((item) => item.district);
+    this.districts = this.sicepat_cilacap_json.map((item) => item.district);
+    this.districts = this.sicepat_kosambi_json.map((item) => item.district);
+    this.districts = this.sicepat_tandes_json.map((item) => item.district);
   },
 
   methods: {
@@ -349,7 +379,7 @@ export default {
         checkoutDataEntry.sumPrice =
           checkoutDataEntry.pricePerProduct * checkoutDataEntry.quantity;
       } else {
-        checkoutDataEntry.sumPrice = null; // Handle jika salah satu atau kedua field belum terisi
+        checkoutDataEntry.sumPrice = null;
       }
     },
 
@@ -362,7 +392,7 @@ export default {
         checkoutDataEntry.totalPrice =
           checkoutDataEntry.sumPrice - checkoutDataEntry.discount;
       } else {
-        checkoutDataEntry.totalPrice = null; // Handle jika salah satu atau kedua field belum terisi atau discount adalah nilai default
+        checkoutDataEntry.totalPrice = null;
       }
       this.calculateTotalProductCost();
       this.calculateDiscountAllProduct();
@@ -373,7 +403,7 @@ export default {
         checkoutDataEntry.weightTotal =
           checkoutDataEntry.quantity * checkoutDataEntry.weightPerProduct;
       } else {
-        checkoutDataEntry.weightTotal = null; // Handle jika salah satu atau kedua field belum terisi
+        checkoutDataEntry.weightTotal = null;
       }
     },
 
@@ -391,39 +421,197 @@ export default {
       let totalProductDiscount = 0;
       this.users.checkoutData.forEach((entry) => {
         if (entry.discount) {
-          totalProductDiscount += parseFloat(entry.discount); // Convert to a number and add to the totalProductDiscount
+          totalProductDiscount += parseFloat(entry.discount);
         }
       });
       this.users.totalProductDiscount = totalProductDiscount;
     },
 
     calculateTotalDeliveryCost() {
+      const selectedExpedition = this.users.deliveryData.expedition;
+      const selectedWarehouse = this.users.deliveryData.warehouse;
+      const selectedDistrict = this.users.deliveryData.district;
+
+      if (selectedExpedition && selectedWarehouse && selectedDistrict) {
+        let selectedData;
+        if (selectedExpedition === "jnt") {
+          if (selectedWarehouse === "cilacap") {
+            selectedData = this.jnt_cilacap_json.find(
+              (item) => item.district === selectedDistrict
+            );
+          } else if (selectedWarehouse === "kosambi") {
+            selectedData = this.jnt_kosambi_json.find(
+              (item) => item.district === selectedDistrict
+            );
+          } else if (selectedWarehouse === "tandes") {
+            selectedData = this.jnt_tandes_json.find(
+              (item) => item.district === selectedDistrict
+            );
+          }
+        } else if (selectedExpedition === "ninja") {
+          if (selectedWarehouse === "cilacap") {
+            selectedData = this.ninja_cilacap_json.find(
+              (item) => item.district === selectedDistrict
+            );
+          } else if (selectedWarehouse === "kosambi") {
+            selectedData = this.ninja_kosambi_json.find(
+              (item) => item.district === selectedDistrict
+            );
+          } else if (selectedWarehouse === "tandes") {
+            selectedData = this.ninja_tandes_json.find(
+              (item) => item.district === selectedDistrict
+            );
+          }
+        } else if (selectedExpedition === "sicepat") {
+          if (selectedWarehouse === "cilacap") {
+            selectedData = this.sicepat_cilacap_json.find(
+              (item) => item.district === selectedDistrict
+            );
+          } else if (selectedWarehouse === "kosambi") {
+            selectedData = this.sicepat_kosambi_json.find(
+              (item) => item.district === selectedDistrict
+            );
+          } else if (selectedWarehouse === "tandes") {
+            selectedData = this.sicepat_tandes_json.find(
+              (item) => item.district === selectedDistrict
+            );
+          }
+        }
+
+        if (selectedData) {
+          this.users.deliveryData.deliveryFee = selectedData.delivery_cost;
+        } else {
+          this.users.deliveryData.deliveryFee = null;
+        }
+
+        // Reset field diskon ongkir menjadi kosong (null)
+        this.users.deliveryData.deliveryDiscount = null;
+
+        // Recalculate total delivery cost when the district changes
+        this.calculateTotalPayment();
+      }
+    },
+
+    calculateTotalDelivery() {
+      const deliveryFee = this.users.deliveryData.deliveryFee;
+      const deliveryDiscountFromApi = this.users.deliveryData.deliveryDiscount; // Default value from the API
+      const deliveryDiscount =
+        deliveryDiscountFromApi !== null &&
+        deliveryDiscountFromApi !== undefined
+          ? deliveryDiscountFromApi
+          : 0; // Use the default value from API if available, otherwise use 0
+
       if (
-        this.users.deliveryData.deliveryFee &&
-        this.users.deliveryData.deliveryDiscount !== null &&
-        this.users.deliveryData.deliveryDiscount !== undefined
+        deliveryFee !== null &&
+        deliveryDiscount !== null &&
+        deliveryDiscount !== undefined
       ) {
         this.users.totalDeliveryCost =
-          this.users.deliveryData.deliveryFee -
-          this.users.deliveryData.deliveryDiscount +
-          this.users.deliveryData.handlingFee;
-
-        // Set totalDeliveryDiscount to be the same as deliveryDiscount
-        this.users.totalDeliveryDiscount =
-          this.users.deliveryData.deliveryDiscount;
+          deliveryFee - deliveryDiscount + this.users.deliveryData.handlingFee;
+        this.users.totalDeliveryDiscount = deliveryDiscount;
       } else {
-        this.users.totalDeliveryCost = null; // Handle jika salah satu atau kedua field belum terisi atau deliveryDiscount adalah nilai default
-        this.users.totalDeliveryDiscount = null; // Handle jika salah satu atau kedua field belum terisi atau deliveryDiscount adalah nilai default
+        this.users.totalDeliveryCost = null;
+        this.users.totalDeliveryDiscount = null;
       }
+
+      // If deliveryDiscount is null or undefined, set it to 0
+      if (
+        this.users.deliveryData.deliveryDiscount === null ||
+        this.users.deliveryData.deliveryDiscount === undefined
+      ) {
+        this.users.deliveryData.deliveryDiscount = 0;
+      }
+    },
+
+    calculateHandlingFee() {
+      if (this.users.totalProductCost && this.users.deliveryData.deliveryFee) {
+        const totalCost =
+          parseFloat(this.users.totalProductCost) +
+          parseFloat(this.users.deliveryData.deliveryFee);
+        const handlingFee = totalCost * 0.03;
+        this.users.deliveryData.handlingFee =
+          Math.ceil(parseFloat(handlingFee.toFixed(2)) / 100) * 100;
+      } else {
+        this.users.deliveryData.handlingFee = null;
+      }
+
+      // Recalculate the total payment when handling fee changes
+      this.calculateTotalPayment();
     },
 
     calculateTotalPayment() {
       if (this.users.totalProductCost && this.users.totalDeliveryCost) {
         this.users.totalPayment =
-          this.users.totalProductCost + this.users.totalDeliveryCost;
+          parseFloat(this.users.totalProductCost) +
+          parseFloat(this.users.totalDeliveryCost);
       } else {
-        this.users.totalPayment = null; // Handle jika salah satu atau kedua field belum terisi
+        this.users.totalPayment = null;
       }
+    },
+
+    filterDataByExpeditionAndWarehouse() {
+      const selectedExpedition = this.users.deliveryData.expedition;
+      const selectedWarehouse = this.users.deliveryData.warehouse;
+
+      if (!selectedExpedition || !selectedWarehouse) {
+        // If either expedition or warehouse is not selected, reset districts data
+        // and do not proceed with updating delivery fee
+        this.districts = [];
+        return; // Exit the method early if expedition or warehouse is not selected
+      }
+
+      // Buat logika untuk memilih data sesuai dengan ekspedisi dan gudang yang dipilih
+      let filteredData = [];
+      if (selectedExpedition === "jnt") {
+        if (selectedWarehouse === "cilacap") {
+          filteredData = this.jnt_cilacap_json;
+        } else if (selectedWarehouse === "kosambi") {
+          filteredData = this.jnt_kosambi_json;
+        } else if (selectedWarehouse === "tandes") {
+          filteredData = this.jnt_tandes_json;
+        }
+      } else if (selectedExpedition === "ninja") {
+        if (selectedWarehouse === "cilacap") {
+          filteredData = this.ninja_cilacap_json;
+        } else if (selectedWarehouse === "kosambi") {
+          filteredData = this.ninja_kosambi_json;
+        } else if (selectedWarehouse === "tandes") {
+          filteredData = this.ninja_tandes_json;
+        }
+      } else if (selectedExpedition === "sicepat") {
+        if (selectedWarehouse === "cilacap") {
+          filteredData = this.sicepat_cilacap_json;
+        } else if (selectedWarehouse === "kosambi") {
+          filteredData = this.sicepat_kosambi_json;
+        } else if (selectedWarehouse === "tandes") {
+          filteredData = this.sicepat_tandes_json;
+        }
+      }
+
+      // Reset field diskon ongkir menjadi kosong (null)
+      this.users.deliveryData.deliveryDiscount = null;
+
+      // Update data districts dengan data yang sesuai
+      this.districts = filteredData.map((item) => item.district);
+
+      // Update the deliveryFee based on the selected district's delivery_cost
+      const selectedDistrict = this.users.deliveryData.district;
+      if (selectedDistrict) {
+        const selectedRegencyData = filteredData.find(
+          (item) => item.district === selectedDistrict
+        );
+        if (selectedRegencyData) {
+          this.users.deliveryData.deliveryFee =
+            selectedRegencyData.delivery_cost;
+        } else {
+          this.users.deliveryData.deliveryFee = null;
+        }
+      } else {
+        this.users.deliveryData.deliveryFee = null;
+      }
+
+      // Simpan data filteredData untuk digunakan dalam perhitungan total biaya
+      this.filteredData = filteredData;
     },
 
     updateCheckOutData() {
@@ -432,6 +620,7 @@ export default {
         this.calculateTotalPrice(entry);
         this.calculateWeightTotal(entry);
         this.calculateTotalDeliveryCost(entry);
+        this.calculateTotalDelivery(entry);
         this.calculateTotalPayment(entry);
       });
 
@@ -455,10 +644,60 @@ export default {
           this.calculateTotalPrice(entry);
           this.calculateWeightTotal(entry);
           this.calculateTotalDeliveryCost(entry);
+          this.calculateTotalDelivery(entry);
           this.calculateTotalPayment(entry);
         });
       },
     },
+
+    "users.deliveryData.expedition": function (newExpedition, oldExpedition) {
+      if (newExpedition !== oldExpedition) {
+        // Reset handlingFee when the expedition changes
+        this.users.deliveryData.handlingFee = null;
+      }
+      this.filterDataByExpeditionAndWarehouse();
+    },
+
+    "users.deliveryData.warehouse": function (newWarehouse, oldWarehouse) {
+      if (newWarehouse !== oldWarehouse) {
+        // Reset handlingFee when the warehouse changes
+        this.users.deliveryData.handlingFee = null;
+      }
+      this.filterDataByExpeditionAndWarehouse();
+    },
+
+    "users.deliveryData.district": function (newDistrict, oldDistrict) {
+      if (newDistrict !== oldDistrict) {
+        // Reset handlingFee when the district changes
+        this.users.deliveryData.handlingFee = null;
+      }
+
+      if (newDistrict) {
+        // Find the selected district in the appropriate JSON data
+        const selectedRegencyData = this.filteredData.find(
+          (item) => item.district === newDistrict
+        );
+
+        // Update the deliveryFee based on the selected district's delivery_cost
+        if (selectedRegencyData) {
+          this.users.deliveryData.deliveryFee =
+            selectedRegencyData.delivery_cost;
+        } else {
+          this.users.deliveryData.deliveryFee = null;
+        }
+
+        // Recalculate total delivery cost when the district changes
+        this.calculateTotalDeliveryCost();
+      }
+    },
+
+    "users.deliveryData.expedition": "filterDataByExpeditionAndWarehouse",
+    "users.deliveryData.warehouse": "filterDataByExpeditionAndWarehouse",
+    "users.deliveryData.district": "calculateTotalDeliveryCost",
+
+    "users.totalProductCost": "calculateHandlingFee",
+    "users.totalDeliveryCost": "calculateHandlingFee",
+    "users.deliveryData.deliveryFee": "calculateHandlingFee",
   },
 };
 </script>
