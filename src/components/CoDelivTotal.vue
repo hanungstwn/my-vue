@@ -44,6 +44,7 @@
                                 hint="Product Quantity"
                                 outlined
                                 required
+                                type="number"
                                 v-model="
                                   checkoutDataEntry.quantity
                                 "></v-text-field>
@@ -60,6 +61,7 @@
                                 hint="Weight Total"
                                 outlined
                                 required
+                                disabled
                                 v-model="
                                   checkoutDataEntry.weightTotal
                                 "></v-text-field>
@@ -70,6 +72,7 @@
                                 hint="Harga /Produk"
                                 outlined
                                 required
+                                type="number"
                                 v-model="
                                   checkoutDataEntry.pricePerProduct
                                 "></v-text-field>
@@ -87,6 +90,7 @@
                                 hint="Diskon"
                                 outlined
                                 required
+                                type="number"
                                 v-model="
                                   checkoutDataEntry.discount
                                 "></v-text-field>
@@ -153,22 +157,56 @@
                   </v-col>
                 </v-row>
                 <v-row>
-                  <v-col cols="12" sm="6" md="6">
+                  <!-- <v-col cols="12" sm="6" md="6">
                     <v-text-field
                       clearable
                       label="Kabupaten"
                       v-model="users.customerData.regency"
                       outlined
                       disabled></v-text-field>
+                  </v-col> -->
+                  <v-col cols="12" sm="4" md="4">
+                    <v-text-field
+                      clearable
+                      label="Provinsi"
+                      v-model="users.customerData.province"
+                      outlined
+                      disabled></v-text-field>
                   </v-col>
-                  <v-col cols="12" sm="6" md="6">
+                  <v-col cols="12" sm="4" md="4">
+                    <v-text-field
+                      clearable
+                      label="Kabupaten"
+                      v-model="users.customerData.regency"
+                      outlined></v-text-field>
+                  </v-col>
+                  <v-col cols="12" sm="4" md="4">
                     <v-autocomplete
                       clearable
                       label="Kecamatan"
-                      v-model="users.deliveryData.district"
+                      v-model="users.customerData.district"
                       :items="districts"
                       outlined></v-autocomplete>
                   </v-col>
+                </v-row>
+                <v-row>
+                  <v-col cols="12" sm="6" md="6"
+                    ><v-text-field
+                      label="Biaya Penanganan"
+                      v-model="users.deliveryData.handlingFee"
+                      outlined
+                      required
+                      disabled></v-text-field
+                  ></v-col>
+                  <v-col cols="12" sm="6" md="6"
+                    ><v-text-field
+                      label="Diskon Ongkir"
+                      v-model="users.deliveryData.deliveryDiscount"
+                      outlined
+                      required
+                      type="number"
+                      @input="calculateTotalDelivery"></v-text-field
+                  ></v-col>
                 </v-row>
                 <v-row>
                   <v-col cols="12" sm="4" md="4"
@@ -182,19 +220,21 @@
                   ></v-col>
                   <v-col cols="12" sm="4" md="4"
                     ><v-text-field
-                      label="Biaya Penanganan"
-                      v-model="users.deliveryData.handlingFee"
+                      label="Berat Total"
                       outlined
                       required
-                      disabled></v-text-field
+                      v-model="totalWeight"
+                      disabled
+                      readonly></v-text-field
                   ></v-col>
                   <v-col cols="12" sm="4" md="4"
                     ><v-text-field
-                      label="Diskon Ongkir"
-                      v-model="users.deliveryData.deliveryDiscount"
+                      label="Jumlah Ongkos Kirim"
                       outlined
                       required
-                      @input="calculateTotalDelivery"></v-text-field
+                      :value="totalOngkosKirim"
+                      disabled
+                      readonly></v-text-field
                   ></v-col>
                 </v-row>
               </div>
@@ -306,7 +346,10 @@ export default {
       sicepat_tandes_json: sicepat_tandes_json,
       isLoading: true,
       text: "",
+      totalWeight: 0,
       districts: [],
+      regencies: [],
+      provinces: [],
       selectedData: null,
       selectedExpedition: null,
       selectedWarehouse: null,
@@ -346,15 +389,56 @@ export default {
     this.fetchData();
     this.calculateTotalProductCost();
     this.calculateDiscountAllProduct();
-    this.districts = this.jnt_cilacap_json.map((item) => item.district);
-    this.districts = this.jnt_kosambi_json.map((item) => item.district);
-    this.districts = this.jnt_tandes_json.map((item) => item.district);
-    this.districts = this.ninja_cilacap_json.map((item) => item.district);
-    this.districts = this.ninja_kosambi_json.map((item) => item.district);
-    this.districts = this.ninja_tandes_json.map((item) => item.district);
-    this.districts = this.sicepat_cilacap_json.map((item) => item.district);
-    this.districts = this.sicepat_kosambi_json.map((item) => item.district);
-    this.districts = this.sicepat_tandes_json.map((item) => item.district);
+    const jsonDataArrays = [
+      this.jnt_cilacap_json,
+      this.jnt_kosambi_json,
+      this.jnt_tandes_json,
+      this.ninja_cilacap_json,
+      this.ninja_kosambi_json,
+      this.ninja_tandes_json,
+      this.sicepat_cilacap_json,
+      this.sicepat_kosambi_json,
+      this.sicepat_tandes_json,
+    ];
+
+    this.districts = [].concat(
+      ...jsonDataArrays.map((data) => data.map((item) => item.district))
+    );
+    this.regencies = [].concat(
+      ...jsonDataArrays.map((data) => data.map((item) => item.regency))
+    );
+
+    this.totalWeight = this.calculateTotalWeight();
+  },
+
+  computed: {
+    // Menghitung Total Ongkos Kirim Dengan Berat Pembulatan
+    totalOngkosKirim() {
+      const deliveryFee = parseFloat(this.users.deliveryData.deliveryFee);
+      const totalWeight = parseFloat(this.totalWeight); // Use the data property here
+
+      if (!isNaN(deliveryFee) && !isNaN(totalWeight)) {
+        let roundedWeight = Math.ceil(totalWeight);
+        if (roundedWeight < 1) {
+          roundedWeight = 1;
+        }
+        return deliveryFee * roundedWeight;
+      } else {
+        return null;
+      }
+    },
+
+    // Menghitung Total Ongkos Kirim Dengan Berat Tanpa Pembulatan
+    // totalOngkosKirim() {
+    //   const deliveryFee = parseFloat(this.users.deliveryData.deliveryFee);
+    //   const totalWeight = parseFloat(this.totalWeight);
+
+    //   if (!isNaN(deliveryFee) && !isNaN(totalWeight)) {
+    //     return deliveryFee * totalWeight;
+    //   } else {
+    //     return null;
+    //   }
+    // },
   },
 
   methods: {
@@ -374,6 +458,7 @@ export default {
         .catch((error) => console.log(error));
     },
 
+    // Menghitung Jumlah Harga Produk
     calculateSumPrice(checkoutDataEntry) {
       if (checkoutDataEntry.pricePerProduct && checkoutDataEntry.quantity) {
         checkoutDataEntry.sumPrice =
@@ -383,6 +468,7 @@ export default {
       }
     },
 
+    // Menghitung Jumlah Harga Produk Setelah Diskon
     calculateTotalPrice(checkoutDataEntry) {
       if (
         checkoutDataEntry.sumPrice &&
@@ -398,6 +484,7 @@ export default {
       this.calculateDiscountAllProduct();
     },
 
+    // Menghitung Jumlah Berat Produk
     calculateWeightTotal(checkoutDataEntry) {
       if (checkoutDataEntry.quantity && checkoutDataEntry.weightPerProduct) {
         checkoutDataEntry.weightTotal =
@@ -405,8 +492,11 @@ export default {
       } else {
         checkoutDataEntry.weightTotal = null;
       }
+
+      this.calculateTotalDelivery();
     },
 
+    // Menghitung Total Biaya Produk
     calculateTotalProductCost() {
       let totalProductCost = 0;
       this.users.checkoutData.forEach((entry) => {
@@ -415,6 +505,17 @@ export default {
         }
       });
       this.users.totalProductCost = totalProductCost;
+    },
+
+    // Menghitung Total Berat Produk Keseluruhan
+    calculateTotalWeight() {
+      let totalWeight = 0;
+      this.users.checkoutData.forEach((entry) => {
+        if (entry.weightTotal) {
+          totalWeight += parseFloat(entry.weightTotal);
+        }
+      });
+      return totalWeight;
     },
 
     calculateDiscountAllProduct() {
@@ -427,71 +528,64 @@ export default {
       this.users.totalProductDiscount = totalProductDiscount;
     },
 
+    // Mengambil Data Ongkir Dari JSON Sesuai Dengan Filter
     calculateTotalDeliveryCost() {
       const selectedExpedition = this.users.deliveryData.expedition;
       const selectedWarehouse = this.users.deliveryData.warehouse;
-      const selectedDistrict = this.users.deliveryData.district;
+      const selectedDistrict = this.users.customerData.district;
 
       if (selectedExpedition && selectedWarehouse && selectedDistrict) {
-        let selectedData;
+        let selectedData = null;
+        let jsonData = [];
+
+        // Determine the jsonData based on the selected expedition and warehouse
         if (selectedExpedition === "jnt") {
           if (selectedWarehouse === "cilacap") {
-            selectedData = this.jnt_cilacap_json.find(
-              (item) => item.district === selectedDistrict
-            );
+            jsonData = this.jnt_cilacap_json;
           } else if (selectedWarehouse === "kosambi") {
-            selectedData = this.jnt_kosambi_json.find(
-              (item) => item.district === selectedDistrict
-            );
+            jsonData = this.jnt_kosambi_json;
           } else if (selectedWarehouse === "tandes") {
-            selectedData = this.jnt_tandes_json.find(
-              (item) => item.district === selectedDistrict
-            );
+            jsonData = this.jnt_tandes_json;
           }
         } else if (selectedExpedition === "ninja") {
           if (selectedWarehouse === "cilacap") {
-            selectedData = this.ninja_cilacap_json.find(
-              (item) => item.district === selectedDistrict
-            );
+            jsonData = this.ninja_cilacap_json;
           } else if (selectedWarehouse === "kosambi") {
-            selectedData = this.ninja_kosambi_json.find(
-              (item) => item.district === selectedDistrict
-            );
+            jsonData = this.ninja_kosambi_json;
           } else if (selectedWarehouse === "tandes") {
-            selectedData = this.ninja_tandes_json.find(
-              (item) => item.district === selectedDistrict
-            );
+            jsonData = this.ninja_tandes_json;
           }
         } else if (selectedExpedition === "sicepat") {
           if (selectedWarehouse === "cilacap") {
-            selectedData = this.sicepat_cilacap_json.find(
-              (item) => item.district === selectedDistrict
-            );
+            jsonData = this.sicepat_cilacap_json;
           } else if (selectedWarehouse === "kosambi") {
-            selectedData = this.sicepat_kosambi_json.find(
-              (item) => item.district === selectedDistrict
-            );
+            jsonData = this.sicepat_kosambi_json;
           } else if (selectedWarehouse === "tandes") {
-            selectedData = this.sicepat_tandes_json.find(
-              (item) => item.district === selectedDistrict
-            );
+            jsonData = this.sicepat_tandes_json;
           }
         }
 
+        // Find the selected district in the jsonData
+        selectedData = jsonData.find(
+          (item) => item.district === selectedDistrict
+        );
+
         if (selectedData) {
+          // Update the delivery fee based on the selected district's delivery_cost
           this.users.deliveryData.deliveryFee = selectedData.delivery_cost;
         } else {
           this.users.deliveryData.deliveryFee = null;
         }
 
-        // Reset field diskon ongkir menjadi kosong (null)
+        // Reset the field discount on delivery to null
         this.users.deliveryData.deliveryDiscount = null;
 
-        // Recalculate total delivery cost when the district changes
+        // Recalculate the total payment
         this.calculateTotalPayment();
       }
     },
 
+    // Menghitung Total Biaya Pengiriman
     calculateTotalDelivery() {
       const deliveryFee = this.users.deliveryData.deliveryFee;
       const deliveryDiscountFromApi = this.users.deliveryData.deliveryDiscount; // Default value from the API
@@ -499,22 +593,24 @@ export default {
         deliveryDiscountFromApi !== null &&
         deliveryDiscountFromApi !== undefined
           ? deliveryDiscountFromApi
-          : 0; // Use the default value from API if available, otherwise use 0
+          : 0;
 
       if (
         deliveryFee !== null &&
         deliveryDiscount !== null &&
         deliveryDiscount !== undefined
       ) {
+        const handlingFee =
+          parseFloat(this.users.deliveryData.handlingFee) || 0;
+        const totalOngkosKirim = parseFloat(this.totalOngkosKirim) || 0;
         this.users.totalDeliveryCost =
-          deliveryFee - deliveryDiscount + this.users.deliveryData.handlingFee;
+          totalOngkosKirim + handlingFee - deliveryDiscount;
         this.users.totalDeliveryDiscount = deliveryDiscount;
       } else {
         this.users.totalDeliveryCost = null;
         this.users.totalDeliveryDiscount = null;
       }
 
-      // If deliveryDiscount is null or undefined, set it to 0
       if (
         this.users.deliveryData.deliveryDiscount === null ||
         this.users.deliveryData.deliveryDiscount === undefined
@@ -523,11 +619,13 @@ export default {
       }
     },
 
+    // Menghitung Biaya Penanganan
     calculateHandlingFee() {
-      if (this.users.totalProductCost && this.users.deliveryData.deliveryFee) {
-        const totalCost =
-          parseFloat(this.users.totalProductCost) +
-          parseFloat(this.users.deliveryData.deliveryFee);
+      const totalProductCost = parseFloat(this.users.totalProductCost);
+      const totalOngkosKirim = parseFloat(this.totalOngkosKirim);
+
+      if (!isNaN(totalProductCost) && !isNaN(totalOngkosKirim)) {
+        const totalCost = totalProductCost + totalOngkosKirim;
         const handlingFee = totalCost * 0.03;
         this.users.deliveryData.handlingFee =
           Math.ceil(parseFloat(handlingFee.toFixed(2)) / 100) * 100;
@@ -535,10 +633,10 @@ export default {
         this.users.deliveryData.handlingFee = null;
       }
 
-      // Recalculate the total payment when handling fee changes
       this.calculateTotalPayment();
     },
 
+    // Menghitung Total Pembayaran
     calculateTotalPayment() {
       if (this.users.totalProductCost && this.users.totalDeliveryCost) {
         this.users.totalPayment =
@@ -549,15 +647,14 @@ export default {
       }
     },
 
+    // Fungsi Untuk Memfilter Berdasarkan Ekspedisi & Gudang
     filterDataByExpeditionAndWarehouse() {
       const selectedExpedition = this.users.deliveryData.expedition;
       const selectedWarehouse = this.users.deliveryData.warehouse;
 
       if (!selectedExpedition || !selectedWarehouse) {
-        // If either expedition or warehouse is not selected, reset districts data
-        // and do not proceed with updating delivery fee
         this.districts = [];
-        return; // Exit the method early if expedition or warehouse is not selected
+        return;
       }
 
       // Buat logika untuk memilih data sesuai dengan ekspedisi dan gudang yang dipilih
@@ -594,8 +691,8 @@ export default {
       // Update data districts dengan data yang sesuai
       this.districts = filteredData.map((item) => item.district);
 
-      // Update the deliveryFee based on the selected district's delivery_cost
-      const selectedDistrict = this.users.deliveryData.district;
+      const selectedDistrict = this.users.customerData.district;
+
       if (selectedDistrict) {
         const selectedRegencyData = filteredData.find(
           (item) => item.district === selectedDistrict
@@ -610,7 +707,6 @@ export default {
         this.users.deliveryData.deliveryFee = null;
       }
 
-      // Simpan data filteredData untuk digunakan dalam perhitungan total biaya
       this.filteredData = filteredData;
     },
 
@@ -646,30 +742,44 @@ export default {
           this.calculateTotalDeliveryCost(entry);
           this.calculateTotalDelivery(entry);
           this.calculateTotalPayment(entry);
+          this.totalWeight = this.calculateTotalWeight();
         });
+      },
+    },
+
+    totalWeight: {
+      handler(newWeight, oldWeight) {
+        // Check if the totalWeight has changed
+        if (newWeight !== oldWeight) {
+          // Recalculate the totalOngkosKirim
+          this.users.deliveryData.deliveryFee = this.totalOngkosKirim;
+          // Trigger the calculateTotalPayment() function or any other relevant logic if needed.
+          this.calculateTotalPayment();
+        }
       },
     },
 
     "users.deliveryData.expedition": function (newExpedition, oldExpedition) {
       if (newExpedition !== oldExpedition) {
-        // Reset handlingFee when the expedition changes
         this.users.deliveryData.handlingFee = null;
       }
       this.filterDataByExpeditionAndWarehouse();
+      this.filterRegencies();
     },
 
     "users.deliveryData.warehouse": function (newWarehouse, oldWarehouse) {
       if (newWarehouse !== oldWarehouse) {
-        // Reset handlingFee when the warehouse changes
         this.users.deliveryData.handlingFee = null;
       }
       this.filterDataByExpeditionAndWarehouse();
+      this.filterRegencies();
     },
 
-    "users.deliveryData.district": function (newDistrict, oldDistrict) {
+    "users.customerData.district": function (newDistrict, oldDistrict) {
       if (newDistrict !== oldDistrict) {
         // Reset handlingFee when the district changes
         this.users.deliveryData.handlingFee = null;
+        // this.updateRegencyValue();
       }
 
       if (newDistrict) {
@@ -691,9 +801,15 @@ export default {
       }
     },
 
+    "users.customerData.province": "filterRegencies",
+    "users.customerData.regency": "filterDistricts",
+
+    "users.deliveryData.deliveryFee": "calculateTotalOngkir",
+    "users.totalProductCost": "calculateTotalOngkir",
+
     "users.deliveryData.expedition": "filterDataByExpeditionAndWarehouse",
     "users.deliveryData.warehouse": "filterDataByExpeditionAndWarehouse",
-    "users.deliveryData.district": "calculateTotalDeliveryCost",
+    "users.customerData.district": "calculateTotalDeliveryCost",
 
     "users.totalProductCost": "calculateHandlingFee",
     "users.totalDeliveryCost": "calculateHandlingFee",

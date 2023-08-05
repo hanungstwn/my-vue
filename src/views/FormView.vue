@@ -74,7 +74,7 @@ export default {
         })
         .catch((error) => {
           this.$swal({
-            title: "Data Gagal Disimpan",
+            title: "Data Gagal Disimpan, Data Tidak Boleh Kosong",
             icon: "error",
             timer: 1500,
             showConfirmButton: false,
