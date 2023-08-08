@@ -13,109 +13,138 @@
                 <h2 class="text-center mt-4 mb-10">Checkout Data</h2>
                 <template>
                   <div>
-                    <v-expansion-panels>
-                      <v-expansion-panel
-                        v-for="(checkoutDataEntry, index) in users.checkoutData"
-                        :key="index">
-                        <v-expansion-panel-header
-                          >Product {{ index + 1 }}</v-expansion-panel-header
-                        >
-                        <v-expansion-panel-content>
-                          <v-row>
-                            <v-col cols="12" sm="6" md="6">
-                              <v-text-field
+                    <v-row>
+                      <v-col cols="12" sm="10" md="10">
+                        <v-expansion-panels>
+                          <v-expansion-panel
+                            v-for="(
+                              checkoutDataEntry, index
+                            ) in users.checkoutData"
+                            :key="index">
+                            <v-expansion-panel-header
+                              >Product {{ index + 1 }}</v-expansion-panel-header
+                            >
+                            <v-expansion-panel-content>
+                              <v-row>
+                                <v-col cols="12" sm="6" md="6">
+                                  <!-- <v-text-field
                                 label="Kode Produk"
                                 hint="Product Code"
                                 outlined
                                 required
                                 v-model="
                                   checkoutDataEntry.productCode
-                                "></v-text-field>
-                              <v-text-field
-                                label="Nama Produk"
-                                hint="Product Name"
-                                outlined
-                                required
-                                v-model="
-                                  checkoutDataEntry.productName
-                                "></v-text-field>
-                              <v-text-field
-                                label="Jumlah"
-                                hint="Product Quantity"
-                                outlined
-                                required
-                                type="number"
-                                v-model="
-                                  checkoutDataEntry.quantity
-                                "></v-text-field>
-                              <v-text-field
-                                label="Berat /Produk"
-                                hint="Weight /product"
-                                outlined
-                                required
-                                v-model="
-                                  checkoutDataEntry.weightPerProduct
-                                "></v-text-field>
-                              <v-text-field
-                                label="Berat Total"
-                                hint="Weight Total"
-                                outlined
-                                required
-                                disabled
-                                v-model="
-                                  checkoutDataEntry.weightTotal
-                                "></v-text-field>
-                            </v-col>
-                            <v-col cols="12" sm="6" md="6">
-                              <v-text-field
-                                label="Harga /Produk"
-                                hint="Harga /Produk"
-                                outlined
-                                required
-                                type="number"
-                                v-model="
-                                  checkoutDataEntry.pricePerProduct
-                                "></v-text-field>
-                              <v-text-field
-                                label="Jumlah Harga"
-                                hint="Jumlah harga"
-                                outlined
-                                required
-                                disabled
-                                v-model="
-                                  checkoutDataEntry.sumPrice
-                                "></v-text-field>
-                              <v-text-field
-                                label="Diskon"
-                                hint="Diskon"
-                                outlined
-                                required
-                                type="number"
-                                v-model="
-                                  checkoutDataEntry.discount
-                                "></v-text-field>
-                              <v-text-field
-                                label="Total Harga"
-                                hint="Total Harga"
-                                outlined
-                                disabled
-                                required
-                                v-model="
-                                  checkoutDataEntry.totalPrice
-                                "></v-text-field>
-                              <v-text-field
-                                label="Bonus"
-                                hint="Bonus"
-                                outlined
-                                required
-                                v-model="
-                                  checkoutDataEntry.bonus
-                                "></v-text-field>
-                            </v-col>
-                          </v-row>
-                        </v-expansion-panel-content>
-                      </v-expansion-panel>
-                    </v-expansion-panels>
+                                "></v-text-field> -->
+                                  <v-autocomplete
+                                    label="Kode Produk"
+                                    hint="Product Code"
+                                    outlined
+                                    required
+                                    item-value="exid"
+                                    item-text="productCode"
+                                    :items="
+                                      productCodes.map(
+                                        (product) => product.productCode
+                                      )
+                                    "
+                                    v-model="
+                                      checkoutDataEntry.productCode
+                                    "></v-autocomplete>
+                                  <v-text-field
+                                    label="Nama Produk"
+                                    hint="Product Name"
+                                    outlined
+                                    required
+                                    disabled
+                                    v-model="
+                                      checkoutDataEntry.productName
+                                    "></v-text-field>
+                                  <v-text-field
+                                    label="Jumlah"
+                                    hint="Product Quantity"
+                                    outlined
+                                    required
+                                    type="number"
+                                    v-model="
+                                      checkoutDataEntry.quantity
+                                    "></v-text-field>
+                                  <v-text-field
+                                    label="Berat /Produk"
+                                    hint="Weight /product"
+                                    outlined
+                                    required
+                                    v-model="
+                                      checkoutDataEntry.weightPerProduct
+                                    "></v-text-field>
+                                  <v-text-field
+                                    label="Berat Total"
+                                    hint="Weight Total"
+                                    outlined
+                                    required
+                                    disabled
+                                    v-model="
+                                      checkoutDataEntry.weightTotal
+                                    "></v-text-field>
+                                </v-col>
+                                <v-col cols="12" sm="6" md="6">
+                                  <v-text-field
+                                    label="Harga /Produk"
+                                    hint="Harga /Produk"
+                                    outlined
+                                    required
+                                    type="number"
+                                    v-model="
+                                      checkoutDataEntry.pricePerProduct
+                                    "></v-text-field>
+                                  <v-text-field
+                                    label="Jumlah Harga"
+                                    hint="Jumlah harga"
+                                    outlined
+                                    required
+                                    disabled
+                                    v-model="
+                                      checkoutDataEntry.sumPrice
+                                    "></v-text-field>
+                                  <v-text-field
+                                    label="Diskon"
+                                    hint="Diskon"
+                                    outlined
+                                    required
+                                    type="number"
+                                    v-model="
+                                      checkoutDataEntry.discount
+                                    "></v-text-field>
+                                  <v-text-field
+                                    label="Total Harga"
+                                    hint="Total Harga"
+                                    outlined
+                                    disabled
+                                    required
+                                    v-model="
+                                      checkoutDataEntry.totalPrice
+                                    "></v-text-field>
+                                  <v-text-field
+                                    label="Bonus"
+                                    hint="Bonus"
+                                    outlined
+                                    required
+                                    v-model="
+                                      checkoutDataEntry.bonus
+                                    "></v-text-field>
+                                </v-col>
+                              </v-row>
+                            </v-expansion-panel-content>
+                          </v-expansion-panel>
+                        </v-expansion-panels>
+                      </v-col>
+                      <v-col cols="12" sm="2" md="2">
+                        <v-btn end large icon>
+                          <v-icon size="x-large" color="error"
+                            >mdi-close-circle-outline</v-icon
+                          >
+                        </v-btn>
+                      </v-col>
+                    </v-row>
                   </div>
                 </template>
               </div>
@@ -176,7 +205,7 @@
                   <v-col cols="12" sm="4" md="4">
                     <v-text-field
                       clearable
-                      label="Kabupaten"
+                      label="Kabupaten/Kota"
                       v-model="users.customerData.regency"
                       outlined></v-text-field>
                   </v-col>
@@ -229,7 +258,7 @@
                   ></v-col>
                   <v-col cols="12" sm="4" md="4"
                     ><v-text-field
-                      label="Jumlah Ongkos Kirim"
+                      label="Jumlah"
                       outlined
                       required
                       :value="totalOngkosKirim"
@@ -350,9 +379,42 @@ export default {
       districts: [],
       regencies: [],
       provinces: [],
+      selectedProductCode: "",
       selectedData: null,
       selectedExpedition: null,
       selectedWarehouse: null,
+      productCodes: [
+        {
+          productCode: "nut",
+          exid: "nut",
+          productName: "nutriflakes",
+        },
+        {
+          productCode: "zym",
+          exid: "zym",
+          productName: "zymuno",
+        },
+        {
+          productCode: "bio",
+          exid: "bio",
+          productName: "bio insuleaf",
+        },
+        {
+          productCode: "lin",
+          exid: "lin",
+          productName: "etawalin",
+        },
+        {
+          productCode: "eta",
+          exid: "eta",
+          productName: "etawaku",
+        },
+        {
+          productCode: "fre",
+          exid: "fre",
+          productName: "freshmag",
+        },
+      ],
       expeditions: [
         {
           expedition: "Jnt",
@@ -482,6 +544,7 @@ export default {
       }
       this.calculateTotalProductCost();
       this.calculateDiscountAllProduct();
+      // this.calculateTotalPayment();
     },
 
     // Menghitung Jumlah Berat Produk
@@ -500,8 +563,8 @@ export default {
     calculateTotalProductCost() {
       let totalProductCost = 0;
       this.users.checkoutData.forEach((entry) => {
-        if (entry.totalPrice) {
-          totalProductCost += entry.totalPrice;
+        if (entry.sumPrice) {
+          totalProductCost += entry.sumPrice;
         }
       });
       this.users.totalProductCost = totalProductCost;
@@ -538,7 +601,6 @@ export default {
         let selectedData = null;
         let jsonData = [];
 
-        // Determine the jsonData based on the selected expedition and warehouse
         if (selectedExpedition === "jnt") {
           if (selectedWarehouse === "cilacap") {
             jsonData = this.jnt_cilacap_json;
@@ -565,22 +627,20 @@ export default {
           }
         }
 
-        // Find the selected district in the jsonData
         selectedData = jsonData.find(
           (item) => item.district === selectedDistrict
         );
 
         if (selectedData) {
-          // Update the delivery fee based on the selected district's delivery_cost
           this.users.deliveryData.deliveryFee = selectedData.delivery_cost;
         } else {
           this.users.deliveryData.deliveryFee = null;
         }
 
-        // Reset the field discount on delivery to null
+        // Reset discount delivery to null
         this.users.deliveryData.deliveryDiscount = null;
 
-        // Recalculate the total payment
+        // Hitung ulang the total payment
         this.calculateTotalPayment();
       }
     },
@@ -588,24 +648,20 @@ export default {
     // Menghitung Total Biaya Pengiriman
     calculateTotalDelivery() {
       const deliveryFee = this.users.deliveryData.deliveryFee;
-      const deliveryDiscountFromApi = this.users.deliveryData.deliveryDiscount; // Default value from the API
-      const deliveryDiscount =
-        deliveryDiscountFromApi !== null &&
-        deliveryDiscountFromApi !== undefined
-          ? deliveryDiscountFromApi
-          : 0;
+      // const deliveryDiscountFromApi = this.users.deliveryData.deliveryDiscount; // Tidak perlu lagi
+      const deliveryDiscount = this.users.deliveryData.deliveryDiscount || 0;
 
-      if (
-        deliveryFee !== null &&
-        deliveryDiscount !== null &&
-        deliveryDiscount !== undefined
-      ) {
+      if (deliveryFee !== null && !isNaN(deliveryFee)) {
         const handlingFee =
           parseFloat(this.users.deliveryData.handlingFee) || 0;
         const totalOngkosKirim = parseFloat(this.totalOngkosKirim) || 0;
-        this.users.totalDeliveryCost =
-          totalOngkosKirim + handlingFee - deliveryDiscount;
-        this.users.totalDeliveryDiscount = deliveryDiscount;
+        this.users.totalDeliveryCost = totalOngkosKirim + handlingFee;
+        this.users.totalDeliveryDiscount = deliveryDiscount; // Mengikuti nilai deliveryDiscount
+
+        // Jika deliveryDiscount diisi oleh pengguna, gunakan nilai tersebut untuk perhitungan total pembayaran
+        if (!isNaN(deliveryDiscount)) {
+          this.calculateTotalPayment();
+        }
       } else {
         this.users.totalDeliveryCost = null;
         this.users.totalDeliveryDiscount = null;
@@ -638,10 +694,17 @@ export default {
 
     // Menghitung Total Pembayaran
     calculateTotalPayment() {
-      if (this.users.totalProductCost && this.users.totalDeliveryCost) {
+      if (
+        this.users.totalProductCost !== null &&
+        this.users.totalDeliveryCost !== null &&
+        this.users.totalDeliveryDiscount !== null &&
+        this.users.totalProductDiscount !== null
+      ) {
         this.users.totalPayment =
           parseFloat(this.users.totalProductCost) +
-          parseFloat(this.users.totalDeliveryCost);
+          parseFloat(this.users.totalDeliveryCost) -
+          parseFloat(this.users.totalDeliveryDiscount) -
+          parseFloat(this.users.totalProductDiscount);
       } else {
         this.users.totalPayment = null;
       }
@@ -743,20 +806,37 @@ export default {
           this.calculateTotalDelivery(entry);
           this.calculateTotalPayment(entry);
           this.totalWeight = this.calculateTotalWeight();
+          const selectedProduct = this.productCodes.find(
+            (product) => product.productCode === entry.productCode
+          );
+
+          if (selectedProduct) {
+            entry.productName = selectedProduct.productName;
+          }
         });
       },
     },
 
     totalWeight: {
       handler(newWeight, oldWeight) {
-        // Check if the totalWeight has changed
+        // Memeriksa totalWeight berubah
         if (newWeight !== oldWeight) {
-          // Recalculate the totalOngkosKirim
+          // Menghitung Ulang Delivery Fee
           this.users.deliveryData.deliveryFee = this.totalOngkosKirim;
-          // Trigger the calculateTotalPayment() function or any other relevant logic if needed.
+          // Memanggil fungsi calculateTotalPayment()
           this.calculateTotalPayment();
         }
       },
+    },
+
+    "checkoutDataEntry.productCode": function (newProductCode, oldProductCode) {
+      const selectedProduct = this.productCodes.find(
+        (product) => product.productCode === newProductCode
+      );
+
+      if (selectedProduct) {
+        this.checkoutDataEntry.productName = selectedProduct.productName;
+      }
     },
 
     "users.deliveryData.expedition": function (newExpedition, oldExpedition) {
@@ -777,18 +857,18 @@ export default {
 
     "users.customerData.district": function (newDistrict, oldDistrict) {
       if (newDistrict !== oldDistrict) {
-        // Reset handlingFee when the district changes
+        // Reset handlingFee ketika data district berubah
         this.users.deliveryData.handlingFee = null;
         // this.updateRegencyValue();
       }
 
       if (newDistrict) {
-        // Find the selected district in the appropriate JSON data
+        // Mencari data district yang dipilih sesuai dengan data JSON
         const selectedRegencyData = this.filteredData.find(
           (item) => item.district === newDistrict
         );
 
-        // Update the deliveryFee based on the selected district's delivery_cost
+        // Mengupdate deliveryFee berdasarkan district yang dipilih dengan mengambil data JSON delivery_cost
         if (selectedRegencyData) {
           this.users.deliveryData.deliveryFee =
             selectedRegencyData.delivery_cost;
@@ -796,7 +876,7 @@ export default {
           this.users.deliveryData.deliveryFee = null;
         }
 
-        // Recalculate total delivery cost when the district changes
+        // menghitung ulang total delivery cost ketika district berubah
         this.calculateTotalDeliveryCost();
       }
     },
