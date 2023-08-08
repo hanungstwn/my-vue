@@ -14,20 +14,35 @@
                 <template>
                   <div>
                     <v-row>
-                      <v-col cols="12" sm="10" md="10">
-                        <v-expansion-panels>
-                          <v-expansion-panel
-                            v-for="(
-                              checkoutDataEntry, index
-                            ) in users.checkoutData"
-                            :key="index">
-                            <v-expansion-panel-header
-                              >Product {{ index + 1 }}</v-expansion-panel-header
-                            >
-                            <v-expansion-panel-content>
-                              <v-row>
-                                <v-col cols="12" sm="6" md="6">
-                                  <!-- <v-text-field
+                      <v-expansion-panels>
+                        <v-expansion-panel
+                          v-for="(
+                            checkoutDataEntry, index
+                          ) in users.checkoutData"
+                          :key="index">
+                          <v-row>
+                            <v-col cols="12" sm="11" md="11">
+                              <v-expansion-panel-header
+                                >Product {{ index + 1 }}
+                              </v-expansion-panel-header>
+                            </v-col>
+                            <v-col cols="12" sm="1" md="1">
+                              <v-btn
+                                end
+                                large
+                                v-if="users.checkoutData.length > 1"
+                                icon
+                                @click="removeCheckoutDataEntry(index)">
+                                <v-icon size="x-large" color="error"
+                                  >mdi-close-circle-outline</v-icon
+                                >
+                              </v-btn>
+                            </v-col>
+                          </v-row>
+                          <v-expansion-panel-content>
+                            <v-row>
+                              <v-col cols="12" sm="6" md="6">
+                                <!-- <v-text-field
                                 label="Kode Produk"
                                 hint="Product Code"
                                 outlined
@@ -35,115 +50,107 @@
                                 v-model="
                                   checkoutDataEntry.productCode
                                 "></v-text-field> -->
-                                  <v-autocomplete
-                                    label="Kode Produk"
-                                    hint="Product Code"
-                                    outlined
-                                    required
-                                    item-value="exid"
-                                    item-text="productCode"
-                                    :items="
-                                      productCodes.map(
-                                        (product) => product.productCode
-                                      )
-                                    "
-                                    v-model="
-                                      checkoutDataEntry.productCode
-                                    "></v-autocomplete>
-                                  <v-text-field
-                                    label="Nama Produk"
-                                    hint="Product Name"
-                                    outlined
-                                    required
-                                    disabled
-                                    v-model="
-                                      checkoutDataEntry.productName
-                                    "></v-text-field>
-                                  <v-text-field
-                                    label="Jumlah"
-                                    hint="Product Quantity"
-                                    outlined
-                                    required
-                                    type="number"
-                                    v-model="
-                                      checkoutDataEntry.quantity
-                                    "></v-text-field>
-                                  <v-text-field
-                                    label="Berat /Produk"
-                                    hint="Weight /product"
-                                    outlined
-                                    required
-                                    v-model="
-                                      checkoutDataEntry.weightPerProduct
-                                    "></v-text-field>
-                                  <v-text-field
-                                    label="Berat Total"
-                                    hint="Weight Total"
-                                    outlined
-                                    required
-                                    disabled
-                                    v-model="
-                                      checkoutDataEntry.weightTotal
-                                    "></v-text-field>
-                                </v-col>
-                                <v-col cols="12" sm="6" md="6">
-                                  <v-text-field
-                                    label="Harga /Produk"
-                                    hint="Harga /Produk"
-                                    outlined
-                                    required
-                                    type="number"
-                                    v-model="
-                                      checkoutDataEntry.pricePerProduct
-                                    "></v-text-field>
-                                  <v-text-field
-                                    label="Jumlah Harga"
-                                    hint="Jumlah harga"
-                                    outlined
-                                    required
-                                    disabled
-                                    v-model="
-                                      checkoutDataEntry.sumPrice
-                                    "></v-text-field>
-                                  <v-text-field
-                                    label="Diskon"
-                                    hint="Diskon"
-                                    outlined
-                                    required
-                                    type="number"
-                                    v-model="
-                                      checkoutDataEntry.discount
-                                    "></v-text-field>
-                                  <v-text-field
-                                    label="Total Harga"
-                                    hint="Total Harga"
-                                    outlined
-                                    disabled
-                                    required
-                                    v-model="
-                                      checkoutDataEntry.totalPrice
-                                    "></v-text-field>
-                                  <v-text-field
-                                    label="Bonus"
-                                    hint="Bonus"
-                                    outlined
-                                    required
-                                    v-model="
-                                      checkoutDataEntry.bonus
-                                    "></v-text-field>
-                                </v-col>
-                              </v-row>
-                            </v-expansion-panel-content>
-                          </v-expansion-panel>
-                        </v-expansion-panels>
-                      </v-col>
-                      <v-col cols="12" sm="2" md="2">
-                        <v-btn end large icon>
-                          <v-icon size="x-large" color="error"
-                            >mdi-close-circle-outline</v-icon
-                          >
-                        </v-btn>
-                      </v-col>
+                                <v-autocomplete
+                                  label="Kode Produk"
+                                  hint="Product Code"
+                                  outlined
+                                  required
+                                  item-value="exid"
+                                  item-text="productCode"
+                                  :items="
+                                    productCodes.map(
+                                      (product) => product.productCode
+                                    )
+                                  "
+                                  v-model="
+                                    checkoutDataEntry.productCode
+                                  "></v-autocomplete>
+                                <v-text-field
+                                  label="Nama Produk"
+                                  hint="Product Name"
+                                  outlined
+                                  required
+                                  disabled
+                                  v-model="
+                                    checkoutDataEntry.productName
+                                  "></v-text-field>
+                                <v-text-field
+                                  label="Jumlah"
+                                  hint="Product Quantity"
+                                  outlined
+                                  required
+                                  type="number"
+                                  v-model="
+                                    checkoutDataEntry.quantity
+                                  "></v-text-field>
+                                <v-text-field
+                                  label="Berat /Produk"
+                                  hint="Weight /product"
+                                  outlined
+                                  required
+                                  v-model="
+                                    checkoutDataEntry.weightPerProduct
+                                  "></v-text-field>
+                                <v-text-field
+                                  label="Berat Total"
+                                  hint="Weight Total"
+                                  outlined
+                                  required
+                                  disabled
+                                  v-model="
+                                    checkoutDataEntry.weightTotal
+                                  "></v-text-field>
+                              </v-col>
+                              <v-col cols="12" sm="6" md="6">
+                                <v-text-field
+                                  label="Harga /Produk"
+                                  hint="Harga /Produk"
+                                  outlined
+                                  required
+                                  type="number"
+                                  v-model="
+                                    checkoutDataEntry.pricePerProduct
+                                  "></v-text-field>
+                                <v-text-field
+                                  label="Jumlah Harga"
+                                  hint="Jumlah harga"
+                                  outlined
+                                  required
+                                  disabled
+                                  v-model="
+                                    checkoutDataEntry.sumPrice
+                                  "></v-text-field>
+                                <v-text-field
+                                  label="Diskon"
+                                  hint="Diskon"
+                                  outlined
+                                  required
+                                  type="number"
+                                  v-model="
+                                    checkoutDataEntry.discount
+                                  "></v-text-field>
+                                <v-text-field
+                                  label="Total Harga"
+                                  hint="Total Harga"
+                                  outlined
+                                  disabled
+                                  required
+                                  v-model="
+                                    checkoutDataEntry.totalPrice
+                                  "></v-text-field>
+                                <v-text-field
+                                  label="Bonus"
+                                  hint="Bonus"
+                                  outlined
+                                  required
+                                  v-model="
+                                    checkoutDataEntry.bonus
+                                  "></v-text-field>
+                              </v-col>
+                            </v-row>
+                          </v-expansion-panel-content>
+                        </v-expansion-panel>
+                      </v-expansion-panels>
                     </v-row>
                   </div>
                 </template>
@@ -342,6 +349,8 @@
 
 <script>
 import axios from "axios";
+import VueSweetalert2 from "vue-sweetalert2";
+import Swal from "sweetalert2";
 import jnt_cilacap_json from "../json/jnt/jnt_cilacap.json";
 import jnt_kosambi_json from "../json/jnt/jnt_kosambi.json";
 import jnt_tandes_json from "../json/jnt/jnt_tandes.json";
@@ -360,6 +369,10 @@ export default {
       type: Object,
       required: true,
     },
+  },
+
+  components: {
+    VueSweetalert2,
   },
 
   data() {
@@ -773,6 +786,37 @@ export default {
       this.filteredData = filteredData;
     },
 
+    // Hapus Data Product
+    removeCheckoutDataEntry(index) {
+      // Tampilkan kotak dialog konfirmasi
+      this.$swal({
+        title: "Konfirmasi",
+        text: "Apakah Anda yakin ingin menghapus data ini?",
+        icon: "warning",
+        buttons: ["Batal", "Hapus"],
+        dangerMode: true,
+      }).then((willDelete) => {
+        if (willDelete) {
+          // Jika pengguna menekan tombol 'Hapus', lanjutkan dengan penghapusan data
+          this.users.checkoutData.splice(index, 1);
+          this.updateCheckOutData();
+
+          if (this.users.checkoutData.length === 0) {
+            this.isLoading = false;
+          }
+
+          this.$swal("Data telah dihapus!", {
+            icon: "success",
+          });
+        } else {
+          // Jika pengguna membatalkan penghapusan, tidak ada tindakan yang diambil
+          this.$swal("Penghapusan dibatalkan.", {
+            icon: "info",
+          });
+        }
+      });
+    },
+
     updateCheckOutData() {
       this.users.checkoutData.forEach((entry, index) => {
         this.calculateSumPrice(entry);
@@ -781,6 +825,7 @@ export default {
         this.calculateTotalDeliveryCost(entry);
         this.calculateTotalDelivery(entry);
         this.calculateTotalPayment(entry);
+        this.totalWeight = this.calculateTotalWeight();
       });
 
       this.calculateTotalProductCost();
