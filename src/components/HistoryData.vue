@@ -80,7 +80,7 @@ export default {
   mounted() {
     this.getData();
     axios
-    .get("http://localhost:8080/orders")
+    .get("https://formorder.gawebecik.com/orders")
     .then((response) => this.setUsers(response.data))
     .catch((error) => console.log(error))
   },

@@ -153,7 +153,7 @@ export default {
     fetchData() {
       axios
         .get(
-          "http://localhost:8080/orders/" + this.$route.params.id + "/details"
+          "https://formorder.gawebecik.com/orders/" + this.$route.params.id + "/details"
         )
         .then((response) => {
           console.log("API Response Data:", response.data);

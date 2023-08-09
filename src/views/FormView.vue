@@ -61,7 +61,7 @@ export default {
   methods: {
     updateData() {
       axios
-        .patch("http://localhost:8080/orders/" + this.users.id, this.users)
+        .patch("https://formorder.gawebecik.com/orders/" + this.users.id, this.users)
         .then((response) => {
           this.$swal({
             title: "Data Berhasil Disimpan",
