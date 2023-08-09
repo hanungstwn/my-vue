@@ -11,7 +11,7 @@ on:
 
 jobs:
   deploy-service:
-    runs-on: [self-hosted, Linux, X64, genahsehat]
+    runs-on: [self-hosted, Linux, X64, genah-app]
     env:
       working-directory: form-vue
     steps:
@@ -19,7 +19,7 @@ jobs:
           uses: actions/checkout@v3
 
         - name: Build app image
-          run: ./create_form_img.sh
+          run: ./create_img.sh
 
         - name: Create and run docker container
           run: docker compose up -d
