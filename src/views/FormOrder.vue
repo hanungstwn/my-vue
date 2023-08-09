@@ -323,7 +323,7 @@ export default {
   },
   created() {
     axios
-      .get("http://localhost:8080/orders/" + this.$route.params.id + "/details")
+      .get("https://formorder.gawebecik.com/orders/" + this.$route.params.id + "/details")
       .then((response) => {
         this.users = response.data.data;
         if (Array.isArray(this.users)) {
@@ -342,7 +342,7 @@ export default {
     updateData() {
       axios
         .patch(
-          "http://localhost:8080/orders/" + this.$route.params.id + "/details",
+          "https://formorder.gawebecik.com/orders/" + this.$route.params.id + "/details",
           this.users
         )
         .then((response) => {
