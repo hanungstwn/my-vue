@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  inputer-dashboard:
+    container_name: inputer-dashboard
+    image: vue-inputer
+    ports:
+      - '8085:80'
+
+
