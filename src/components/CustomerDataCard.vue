@@ -16,6 +16,7 @@
                   hint="Customer Name"
                   outlined
                   required
+                  :disabled="isExported"
                   v-model="users.customerData.custName"></v-text-field>
               </v-col>
               <v-col cols="12" sm="4" md="4">
@@ -25,6 +26,7 @@
                   hint="Customer Whatsapp Number"
                   outlined
                   required
+                  :disabled="isExported"
                   v-model="users.customerData.custWhatsapp"></v-text-field>
               </v-col>
               <v-col cols="12" sm="4" md="4">
@@ -37,40 +39,15 @@
                   disabled
                   v-model="users.customerData.roCount"></v-text-field>
               </v-col>
-              <!-- <v-col cols="12" sm="4" md="4">
-                <v-text-field
-                  label="Kecamatan"
-                  hint="Customer District"
-                  outlined
-                  disabled
-                  required
-                  v-model="users.customerData.district"></v-text-field>
-              </v-col> -->
-              <!-- <v-col cols="12" sm="4" md="4">
-                <v-text-field
-                  label="Kabupaten"
-                  hint="Customer Regency"
-                  outlined
-                  disabled
-                  required
-                  v-model="users.customerData.regency"></v-text-field>
-              </v-col> -->
               <v-col cols="12">
                 <v-textarea
                   label="Alamat Lengkap"
                   hint="Full Address"
                   outlined
                   required
+                  :disabled="isExported"
                   v-model="users.customerData.fullAddress"></v-textarea>
               </v-col>
-              <!-- <v-col cols="12">
-                <v-textarea
-                  label="Alamat Lengkap"
-                  hint="Full Address"
-                  outlined
-                  required
-                  v-model="users.customerData.fullAddress"></v-textarea>
-              </v-col> -->
             </v-row>
           </div>
         </v-card>
@@ -94,9 +71,9 @@ export default {
 
   data() {
     return {
-      users: [],
       isLoading: true,
       text: "",
+      isExported: true,
     };
   },
 
@@ -112,23 +89,19 @@ export default {
           "https://formorder.gawebecik.com/orders/" + this.$route.params.id + "/details"
         )
         .then((response) => {
-          console.log("API Response Data:", response.data); // Add this line to see the response data
+          // console.log("API Response Data:", response.data); // Add this line to see the response data
 
           this.users = response.data.data;
           this.isLoading = false;
 
-          // Emit the event with the loaded users data
+          this.isExported = this.users.isExported;
+
           this.$emit("users-loaded", this.users);
         })
         .catch((error) => console.log(error));
     },
 
     updateCustomerData() {
-      // Your logic to update the customer data
-      // For example, you can update the 'users.customerData' object
-      // ...
-
-      // Emit an event to inform the parent (FormView.vue) about the data update
       this.$emit("users-updated", this.users);
     },
 

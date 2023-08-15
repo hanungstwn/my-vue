@@ -97,6 +97,11 @@
         <v-icon v-if="item.isExported" color="success"
           >mdi-checkbox-marked-circle</v-icon
         >
+        <router-link :to="`/orders/${item.id}/details`" v-if="item.isExported">
+          <v-btn small icon>
+            <v-icon size="x-large" color="#ff8000">mdi-eye</v-icon>
+          </v-btn>
+        </router-link>
         <template v-else>
           <router-link :to="`/orders/${item.id}/details`">
             <v-btn small icon>

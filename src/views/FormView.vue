@@ -8,18 +8,33 @@
     <!-- <DeliveryData v-bind:users="users" v-on:users-loaded="users = $event" /> -->
     <!-- <TotalData v-bind:users="users" v-on:users-loaded="users = $event" /> -->
     <v-container class="button-wrapper">
-      <v-skeleton-loader v-if="isLoading"></v-skeleton-loader>
-      <v-btn
-        v-else
-        depressed
-        class="me-4"
-        color="error"
-        dark
-        @click="cancelUpdate"
-        >Cancel</v-btn
-      >
-      <v-skeleton-loader v-if="isLoading"></v-skeleton-loader>
-      <v-btn v-else depressed color="success" @click="updateData"> Save </v-btn>
+      <div v-if="!users.isExported">
+        <v-skeleton-loader v-if="isLoading"></v-skeleton-loader>
+        <v-btn
+          v-else
+          depressed
+          class="me-4"
+          color="error"
+          dark
+          @click="cancelUpdate"
+          >Cancel</v-btn
+        >
+        <v-skeleton-loader v-if="isLoading"></v-skeleton-loader>
+        <v-btn v-else depressed color="success" @click="updateData">
+          Save
+        </v-btn>
+      </div>
+      <div v-else>
+        <v-skeleton-loader v-if="isLoading"></v-skeleton-loader>
+        <v-btn
+          depressed
+          class="me-4"
+          color="warning"
+          dark
+          @click="cancelUpdate"
+          >Kembali</v-btn
+        >
+      </div>
     </v-container>
   </div>
 </template>
@@ -44,6 +59,7 @@ export default {
     // TotalData,
     VueSweetalert2,
   },
+  props: ["item"],
   data() {
     return {
       users: {},
@@ -70,6 +86,7 @@ export default {
             showConfirmButton: false,
           });
           console.log(response);
+          this.users.isExported = response.data.isExported;
           this.$router.push({ name: "home" });
         })
         .catch((error) => {

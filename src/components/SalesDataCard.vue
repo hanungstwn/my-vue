@@ -15,7 +15,7 @@
                   v-model="users.salesData.csName"
                   @change="updateSalesData"
                   outlined
-                  disabled
+                  :disabled="isExported"
                   required></v-text-field>
               </v-col>
               <v-col cols="12" sm="4" md="4">
@@ -24,6 +24,7 @@
                   v-model="users.salesData.advName"
                   @change="updateSalesData"
                   outlined
+                  :disabled="isExported"
                   required></v-text-field>
               </v-col>
               <v-col cols="12" sm="4" md="4">
@@ -32,6 +33,7 @@
                   v-model="users.salesData.sourceAds"
                   @change="updateSalesData"
                   outlined
+                  :disabled="isExported"
                   required></v-text-field>
               </v-col>
             </v-row>
@@ -58,6 +60,7 @@ export default {
   data() {
     return {
       isLoading: true,
+      isExported: true,
     };
   },
 
@@ -73,9 +76,11 @@ export default {
           "https://formorder.gawebecik.com/orders/" + this.$route.params.id + "/details"
         )
         .then((response) => {
-          console.log("API Response Data:", response.data);
+          // console.log("API Response Data:", response.data);
           this.users = response.data.data;
           this.isLoading = false;
+
+          this.isExported = this.users.isExported;
 
           this.$emit("users-loaded", this.users);
         })

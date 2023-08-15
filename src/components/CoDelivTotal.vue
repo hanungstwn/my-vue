@@ -57,7 +57,7 @@
                                   required
                                   item-value="exid"
                                   item-text="productCode"
-                                  :items="
+                                  :disabled="isExported"                                 :items="
                                     productCodes.map(
                                       (product) => product.productCode
                                     )
@@ -80,6 +80,7 @@
                                   outlined
                                   required
                                   type="number"
+                                  :disabled="isExported"
                                   v-model="
                                     checkoutDataEntry.quantity
                                   "></v-text-field>
@@ -88,6 +89,7 @@
                                   hint="Weight /product"
                                   outlined
                                   required
+                                  :disabled="isExported"
                                   v-model="
                                     checkoutDataEntry.weightPerProduct
                                   "></v-text-field>
@@ -107,6 +109,7 @@
                                   hint="Harga /Produk"
                                   outlined
                                   required
+                                  :disabled="isExported"
                                   type="number"
                                   v-model="
                                     checkoutDataEntry.pricePerProduct
@@ -126,6 +129,7 @@
                                   outlined
                                   required
                                   type="number"
+                                  :disabled="isExported"
                                   v-model="
                                     checkoutDataEntry.discount
                                   "></v-text-field>
@@ -143,6 +147,7 @@
                                   hint="Bonus"
                                   outlined
                                   required
+                                  :disabled="isExported"
                                   v-model="
                                     checkoutDataEntry.bonus
                                   "></v-text-field>
@@ -179,6 +184,7 @@
                       :items="expeditions"
                       item-value="exid"
                       item-text="expedition"
+                      :disabled="isExported"
                       outlined></v-autocomplete>
                   </v-col>
                   <v-col cols="12" sm="6" md="6">
@@ -189,6 +195,7 @@
                       :items="warehouse"
                       item-value="exid"
                       item-text="warehouse"
+                      :disabled="isExported"
                       outlined></v-autocomplete>
                   </v-col>
                 </v-row>
@@ -207,6 +214,7 @@
                       label="Provinsi"
                       v-model="users.customerData.province"
                       outlined
+                      :disabled="isExported"
                       disabled></v-text-field>
                   </v-col>
                   <v-col cols="12" sm="4" md="4">
@@ -214,6 +222,7 @@
                       clearable
                       label="Kabupaten/Kota"
                       v-model="users.customerData.regency"
+                      :disabled="isExported"
                       outlined></v-text-field>
                   </v-col>
                   <v-col cols="12" sm="4" md="4">
@@ -222,6 +231,7 @@
                       label="Kecamatan"
                       v-model="users.customerData.district"
                       :items="districts"
+                      :disabled="isExported"
                       outlined></v-autocomplete>
                   </v-col>
                 </v-row>
@@ -241,6 +251,7 @@
                       outlined
                       required
                       type="number"
+                      :disabled="isExported"
                       @input="calculateTotalDelivery"></v-text-field
                   ></v-col>
                 </v-row>
@@ -335,7 +346,8 @@
                       label="Catatan Kurir"
                       v-model="users.courierNotes"
                       outlined
-                      required></v-textarea>
+                      required
+                      :disabled="isExported"></v-textarea>
                   </v-col>
                 </v-row>
               </div>
@@ -503,6 +515,10 @@ export default {
       }
     },
 
+    isExported() {
+      return this.users.isExported;
+    },
+
     // Menghitung Total Ongkos Kirim Dengan Berat Tanpa Pembulatan
     // totalOngkosKirim() {
     //   const deliveryFee = parseFloat(this.users.deliveryData.deliveryFee);
@@ -527,6 +543,8 @@ export default {
 
           this.users = response.data.data;
           this.isLoading = false;
+
+          this.isExported = this.users.isExported;
 
           this.$emit("users-loaded", this.users);
         })

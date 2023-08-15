@@ -34,7 +34,7 @@
         href="/"
         text
       >
-        <span class="mr-2">HISTORY DATA</span>
+        <span class="mr-2">DASHBOARD INPUTER</span>
         <!-- <v-icon>mdi-open-in-new</v-icon> -->
       </v-btn>
     </v-app-bar>
