@@ -179,6 +179,10 @@ export default {
           text: "Nama Customer",
           value: "customerData.custName",
         },
+        {
+          text: "Nomor HP",
+          value: "customerData.custWhatsapp",
+        },
         // { text: "Alamat", value: "customerData.fullAddress" },
         { text: "Tanggal", value: "createdAtLocal" },
         {
@@ -259,7 +263,7 @@ export default {
   },
   methods: {
     getData() {
-      const URL = "https://formorder.gawebecik.com/orders";
+      const URL = "http://localhost:8080/orders";
       this.users = [];
       axios
         .get(URL)
