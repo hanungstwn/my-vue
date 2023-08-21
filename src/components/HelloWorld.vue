@@ -271,8 +271,8 @@ export default {
   },
   methods: {
     getData() {
-      const URL = "https://formorder.gawebecik.com/orders";
-      // const URL = "http://localhost:8080/orders";
+      // const URL = "https://formorder.gawebecik.com/orders";
+      const URL = "http://localhost:8080/orders";
       this.users = [];
       this.loading = true;
       axios

@@ -57,7 +57,8 @@
                                   required
                                   item-value="exid"
                                   item-text="productCode"
-                                  :disabled="isExported"                                 :items="
+                                  :disabled="isExported"
+                                  :items="
                                     productCodes.map(
                                       (product) => product.productCode
                                     )
@@ -214,8 +215,7 @@
                       label="Provinsi"
                       v-model="users.customerData.province"
                       outlined
-                      :disabled="isExported"
-                      ></v-text-field>
+                      :disabled="isExported"></v-text-field>
                   </v-col>
                   <v-col cols="12" sm="4" md="4">
                     <v-text-field
@@ -535,8 +535,11 @@ export default {
   methods: {
     fetchData() {
       axios
+        // .get(
+        //   "https://formorder.gawebecik.com/orders/" + this.$route.params.id + "/details"
+        // )
         .get(
-          "https://formorder.gawebecik.com/orders/" + this.$route.params.id + "/details"
+          "http://localhost:8080/orders/" + this.$route.params.id + "/details"
         )
         .then((response) => {
           //   console.log("API Response Data:", response.data);
@@ -889,6 +892,26 @@ export default {
           // Menghitung Ulang Delivery Fee
           this.users.deliveryData.deliveryFee = this.totalOngkosKirim;
           // Memanggil fungsi calculateTotalPayment()
+          this.calculateTotalPayment();
+        }
+      },
+    },
+
+    totalOngkosKirim: {
+      handler(newTotalOngkosKirim, oldTotalOngkosKirim) {
+        // Only update totalDeliveryCost and totalPayment when totalOngkosKirim changes
+        if (newTotalOngkosKirim !== oldTotalOngkosKirim) {
+          this.calculateTotalDelivery();
+          this.calculateTotalPayment();
+        }
+      },
+    },
+
+    "users.deliveryData.handlingFee": {
+      handler(newHandlingFee, oldHandlingFee) {
+        // Only update totalDeliveryCost and totalPayment when handlingFee changes
+        if (newHandlingFee !== oldHandlingFee) {
+          this.calculateTotalDelivery();
           this.calculateTotalPayment();
         }
       },
