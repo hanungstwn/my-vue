@@ -271,8 +271,8 @@ export default {
   },
   methods: {
     getData() {
-      // const URL = "https://formorder.gawebecik.com/orders";
-      const URL = "http://localhost:8080/orders";
+      const URL = "https://formorder.gawebecik.com/orders";
+      // const URL = "http://localhost:8080/orders";
       this.users = [];
       this.loading = true;
       axios
@@ -345,8 +345,8 @@ export default {
 
     deleteData(user) {
       axios
-        // .delete(`https://formorder.gawebecik.com/orders/${user.id}`)
-        .delete(`http://localhost:8080/orders/${user.id}`)
+        .delete(`https://formorder.gawebecik.com/orders/${user.id}`)
+        // .delete(`http://localhost:8080/orders/${user.id}`)
         .then((response) => {
           this.$swal("Data Berhasil Dihapus");
           console.log(response);
@@ -420,8 +420,8 @@ export default {
         };
 
         const queryString = new URLSearchParams(params).toString();
-        // const baseURL = "https://formorder.gawebecik.com/orders/generate";
-        const baseURL = "http://localhost:8080/orders/generate";
+        const baseURL = "https://formorder.gawebecik.com/orders/generate";
+        // const baseURL = "http://localhost:8080/orders/generate";
         const URL = `${baseURL}?${queryString}`;
         const res = await axios({
           url: URL,
@@ -434,8 +434,8 @@ export default {
         await Promise.all(
           filteredData.map(async (item) => {
             const id = item.id;
-            // await axios.patch(`https://formorder.gawebecik.com/orders/${id}`, {
-            await axios.patch(`http://localhost:8080/orders/${id}`, {
+            await axios.patch(`https://formorder.gawebecik.com/orders/${id}`, {
+            // await axios.patch(`http://localhost:8080/orders/${id}`, {
               // ... (your existing data properties)
               isExported: true,
               customerData: {
