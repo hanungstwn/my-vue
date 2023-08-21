@@ -75,7 +75,8 @@
       :items="filteredItems"
       :search="search"
       item-key="id"
-      class="elevation-1">
+      class="elevation-1"
+      v-if="!loading">
       <!-- <template v-slot:item.createdAt="{ item }">
         {{ item.createdAt }}
       </template> -->
@@ -94,9 +95,14 @@
 
       <template v-slot:item.actions="{ item }">
         <!-- Check if the data is exported and update the action buttons accordingly -->
-        <v-icon v-if="item.isExported" color="success"
+        <!-- <v-icon v-if="item.isExported" color="success"
           >mdi-checkbox-marked-circle</v-icon
-        >
+        > -->
+        <router-link  v-if="item.isExported" :to="`/orders/${item.id}`">
+          <v-btn small icon @click="confirmDeleteData(item)">
+            <v-icon size="x-large" color="error">mdi-delete-circle</v-icon>
+          </v-btn>
+        </router-link>
         <router-link :to="`/orders/${item.id}/details`" v-if="item.isExported">
           <v-btn small icon>
             <v-icon size="x-large" color="#ff8000">mdi-eye</v-icon>
@@ -116,6 +122,7 @@
         </template>
       </template>
     </v-data-table>
+    <v-progress-linear v-else indeterminate color="success"></v-progress-linear>
   </v-card>
 </template>
 
@@ -139,6 +146,7 @@ export default {
       dialog: false,
       selectedExpedition: null,
       selectedWarehouse: null,
+      loading: false,
       custName: "",
       selected: [],
       expeditions: [
@@ -183,7 +191,7 @@ export default {
           text: "Nomor HP",
           value: "customerData.custWhatsapp",
         },
-        // { text: "Alamat", value: "customerData.fullAddress" },
+        { text: "Diskon Ongkir", value: "deliveryData.deliveryDiscount" },
         { text: "Tanggal", value: "createdAtLocal" },
         {
           text: "Ekspedisi",
@@ -263,12 +271,15 @@ export default {
   },
   methods: {
     getData() {
+      // const URL = "https://formorder.gawebecik.com/orders";
       const URL = "http://localhost:8080/orders";
       this.users = [];
+      this.loading = true;
       axios
         .get(URL)
         .then((res) => {
           // console.log("Response Data:", res.data); // Log the response data to check its structure
+          this.loading = false;
 
           if (!res.data || !res.data.data || res.data.data.length === 0) {
             // Tampilkan pesan kesalahan jika tidak ada data yang diterima dari server API
@@ -298,6 +309,8 @@ export default {
             // Tambahkan properti baru ke user untuk menyimpan createdAt dalam format waktu lokal
             user.createdAtLocal = createdAtLocal;
           });
+
+          this.loading = false;
         })
         .catch((error) => {
           console.error("Error fetching data:", error);
@@ -309,6 +322,7 @@ export default {
             timer: 1500,
             showConfirmButton: false,
           });
+          this.loading = false;
         });
     },
 
@@ -331,7 +345,8 @@ export default {
 
     deleteData(user) {
       axios
-        .delete(`https://formorder.gawebecik.com/orders/${user.id}`)
+        // .delete(`https://formorder.gawebecik.com/orders/${user.id}`)
+        .delete(`http://localhost:8080/orders/${user.id}`)
         .then((response) => {
           this.$swal("Data Berhasil Dihapus");
           console.log(response);
@@ -405,7 +420,8 @@ export default {
         };
 
         const queryString = new URLSearchParams(params).toString();
-        const baseURL = "https://formorder.gawebecik.com/orders/generate";
+        // const baseURL = "https://formorder.gawebecik.com/orders/generate";
+        const baseURL = "http://localhost:8080/orders/generate";
         const URL = `${baseURL}?${queryString}`;
         const res = await axios({
           url: URL,
@@ -418,7 +434,8 @@ export default {
         await Promise.all(
           filteredData.map(async (item) => {
             const id = item.id;
-            await axios.patch(`https://formorder.gawebecik.com/orders/${id}`, {
+            // await axios.patch(`https://formorder.gawebecik.com/orders/${id}`, {
+            await axios.patch(`http://localhost:8080/orders/${id}`, {
               // ... (your existing data properties)
               isExported: true,
               customerData: {

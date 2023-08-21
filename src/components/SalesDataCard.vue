@@ -44,7 +44,57 @@
   </v-form>
 </template>
 
+
 <script>
+import axios from "axios";
+
+export default {
+  name: "SalesData",
+
+  props: {
+    users: {
+      type: Object,
+      required: true,
+    },
+  },
+
+  data() {
+    return {
+      isLoading: true,
+      isExported: true,
+      localUsers: {}, // Add a local data property to store a copy of the prop
+    };
+  },
+
+  mounted() {
+    this.hideSkeleton();
+    this.fetchData();
+  },
+
+  methods: {
+    fetchData() {
+      axios
+        .get("http://localhost:8080/orders/" + this.$route.params.id + "/details")
+        .then((response) => {
+          this.localUsers = response.data.data; // Update the local copy
+          this.isLoading = false;
+          this.isExported = this.localUsers.isExported;
+          this.$emit("users-loaded", this.localUsers); // Emit the local copy
+        })
+        .catch((error) => console.log(error));
+    },
+    updateSalesData() {
+      this.$emit("users-updated", this.localUsers); // Emit the local copy
+    },
+    hideSkeleton() {
+      setTimeout(() => {
+        this.isLoading = false;
+      }, 3000);
+    },
+  },
+};
+</script>
+<!-- <script>
 import axios from "axios";
 
 export default {
@@ -73,7 +123,8 @@ export default {
     fetchData() {
       axios
         .get(
-          "https://formorder.gawebecik.com/orders/" + this.$route.params.id + "/details"
+          // "https://formorder.gawebecik.com/orders/" + this.$route.params.id + "/details"
+          "http://localhost:8080/orders/" + this.$route.params.id + "/details"
         )
         .then((response) => {
           // console.log("API Response Data:", response.data);
@@ -96,7 +147,7 @@ export default {
     },
   },
 };
-</script>
+</script> -->
 
 <style>
 .custom-card {
