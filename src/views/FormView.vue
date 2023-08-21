@@ -1,7 +1,6 @@
 <template>
   <div>
     <CustomerData v-bind:users="users" v-on:users-loaded="users = $event" />
-    <!-- <CustomerData /> -->
     <!-- <CheckOutData v-bind:users="users" v-on:users-loaded="users = $event" /> -->
     <SalesData v-bind:users="users" v-on:users-loaded="users = $event" />
     <CoDelivTotal v-bind:users="users" v-on:users-loaded="users = $event" />
@@ -44,9 +43,6 @@ import VueSweetalert2 from "vue-sweetalert2";
 import CustomerData from "../components/CustomerDataCard.vue";
 import SalesData from "../components/SalesDataCard";
 import CoDelivTotal from "../components/CoDelivTotal.vue";
-// import CheckOutData from "../components/CheckOutDataCard.vue";
-// import DeliveryData from "../components/DeliveryDataCard.vue";
-// import TotalData from "../components/TotalDataCard.vue";
 
 export default {
   name: "FormView",
@@ -54,9 +50,6 @@ export default {
     CustomerData,
     SalesData,
     CoDelivTotal,
-    // CheckOutData,
-    // DeliveryData,
-    // TotalData,
     VueSweetalert2,
   },
   props: ["item"],

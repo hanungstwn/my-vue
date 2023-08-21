@@ -57,8 +57,7 @@
                                   required
                                   item-value="exid"
                                   item-text="productCode"
-                                  :disabled="isExported"
-                                  :items="
+                                  :disabled="isExported"                                 :items="
                                     productCodes.map(
                                       (product) => product.productCode
                                     )
@@ -537,9 +536,7 @@ export default {
     fetchData() {
       axios
         .get(
-          "https://formorder.gawebecik.com/orders/" +
-            this.$route.params.id +
-            "/details"
+          "https://formorder.gawebecik.com/orders/" + this.$route.params.id + "/details"
         )
         .then((response) => {
           //   console.log("API Response Data:", response.data);
@@ -632,7 +629,38 @@ export default {
       const selectedDistrict = this.users.customerData.district;
 
       if (selectedExpedition && selectedWarehouse && selectedDistrict) {
-        // ... (rest of the code remains unchanged)
+        let selectedData = null;
+        let jsonData = [];
+
+        if (selectedExpedition === "jnt") {
+          if (selectedWarehouse === "cilacap") {
+            jsonData = this.jnt_cilacap_json;
+          } else if (selectedWarehouse === "kosambi") {
+            jsonData = this.jnt_kosambi_json;
+          } else if (selectedWarehouse === "tandes") {
+            jsonData = this.jnt_tandes_json;
+          }
+        } else if (selectedExpedition === "ninja") {
+          if (selectedWarehouse === "cilacap") {
+            jsonData = this.ninja_cilacap_json;
+          } else if (selectedWarehouse === "kosambi") {
+            jsonData = this.ninja_kosambi_json;
+          } else if (selectedWarehouse === "tandes") {
+            jsonData = this.ninja_tandes_json;
+          }
+        } else if (selectedExpedition === "sicepat") {
+          if (selectedWarehouse === "cilacap") {
+            jsonData = this.sicepat_cilacap_json;
+          } else if (selectedWarehouse === "kosambi") {
+            jsonData = this.sicepat_kosambi_json;
+          } else if (selectedWarehouse === "tandes") {
+            jsonData = this.sicepat_tandes_json;
+          }
+        }
+
+        selectedData = jsonData.find(
+          (item) => item.district === selectedDistrict
+        );
 
         if (selectedData) {
           this.users.deliveryData.deliveryFee = selectedData.delivery_cost;
@@ -656,7 +684,7 @@ export default {
       // const deliveryDiscountFromApi = this.users.deliveryData.deliveryDiscount; // Tidak perlu lagi
       const deliveryDiscount = this.users.deliveryData.deliveryDiscount || 0;
 
-      if (!isNaN(deliveryFee) && !isNaN(deliveryDiscount)) {
+      if (deliveryFee !== null && !isNaN(deliveryFee)) {
         const handlingFee =
           parseFloat(this.users.deliveryData.handlingFee) || 0;
         const totalOngkosKirim = parseFloat(this.totalOngkosKirim) || 0;
@@ -669,15 +697,15 @@ export default {
         }
       } else {
         this.users.totalDeliveryCost = null;
-        // this.users.totalDeliveryDiscount = null;
+        this.users.totalDeliveryDiscount = null;
       }
 
-      // if (
-      //   this.users.deliveryData.deliveryDiscount === null ||
-      //   this.users.deliveryData.deliveryDiscount === undefined
-      // ) {
-      //   this.users.deliveryData.deliveryDiscount = 0;
-      // }
+      if (
+        this.users.deliveryData.deliveryDiscount === null ||
+        this.users.deliveryData.deliveryDiscount === undefined
+      ) {
+        this.users.deliveryData.deliveryDiscount = 0;
+      }
     },
 
     // Menghitung Biaya Penanganan
@@ -701,15 +729,15 @@ export default {
     calculateTotalPayment() {
       if (
         this.users.totalProductCost !== null &&
-        // this.users.totalDeliveryCost !== null &&
+        this.users.totalDeliveryCost !== null &&
         this.users.totalProductDiscount !== null
       ) {
         // Update totalPayment calculation to consider deliveryDiscount
         this.users.totalPayment =
           parseFloat(this.users.totalProductCost) +
           parseFloat(this.users.totalDeliveryCost) -
-          parseFloat(this.users.totalProductDiscount);
-        // parseFloat(this.users.deliveryData.deliveryDiscount || 0);
+          parseFloat(this.users.totalProductDiscount) -
+          parseFloat(this.users.deliveryData.deliveryDiscount || 0);
       } else {
         this.users.totalPayment = null;
       }
