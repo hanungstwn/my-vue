@@ -1,25 +1,39 @@
 <template>
   <div>
     <CustomerData v-bind:users="users" v-on:users-loaded="users = $event" />
-    <!-- <CustomerData /> -->
     <!-- <CheckOutData v-bind:users="users" v-on:users-loaded="users = $event" /> -->
     <SalesData v-bind:users="users" v-on:users-loaded="users = $event" />
     <CoDelivTotal v-bind:users="users" v-on:users-loaded="users = $event" />
     <!-- <DeliveryData v-bind:users="users" v-on:users-loaded="users = $event" /> -->
     <!-- <TotalData v-bind:users="users" v-on:users-loaded="users = $event" /> -->
     <v-container class="button-wrapper">
-      <v-skeleton-loader v-if="isLoading"></v-skeleton-loader>
-      <v-btn
-        v-else
-        depressed
-        class="me-4"
-        color="error"
-        dark
-        @click="cancelUpdate"
-        >Cancel</v-btn
-      >
-      <v-skeleton-loader v-if="isLoading"></v-skeleton-loader>
-      <v-btn v-else depressed color="success" @click="updateData"> Save </v-btn>
+      <div v-if="!users.isExported">
+        <v-skeleton-loader v-if="isLoading"></v-skeleton-loader>
+        <v-btn
+          v-else
+          depressed
+          class="me-4"
+          color="error"
+          dark
+          @click="cancelUpdate"
+          >Cancel</v-btn
+        >
+        <v-skeleton-loader v-if="isLoading"></v-skeleton-loader>
+        <v-btn v-else depressed color="success" @click="updateData">
+          Save
+        </v-btn>
+      </div>
+      <div v-else>
+        <v-skeleton-loader v-if="isLoading"></v-skeleton-loader>
+        <v-btn
+          depressed
+          class="me-4"
+          color="warning"
+          dark
+          @click="cancelUpdate"
+          >Kembali</v-btn
+        >
+      </div>
     </v-container>
   </div>
 </template>
@@ -29,9 +43,6 @@ import VueSweetalert2 from "vue-sweetalert2";
 import CustomerData from "../components/CustomerDataCard.vue";
 import SalesData from "../components/SalesDataCard";
 import CoDelivTotal from "../components/CoDelivTotal.vue";
-// import CheckOutData from "../components/CheckOutDataCard.vue";
-// import DeliveryData from "../components/DeliveryDataCard.vue";
-// import TotalData from "../components/TotalDataCard.vue";
 
 export default {
   name: "FormView",
@@ -39,11 +50,9 @@ export default {
     CustomerData,
     SalesData,
     CoDelivTotal,
-    // CheckOutData,
-    // DeliveryData,
-    // TotalData,
     VueSweetalert2,
   },
+  props: ["item"],
   data() {
     return {
       users: {},
@@ -61,7 +70,8 @@ export default {
   methods: {
     updateData() {
       axios
-        .patch("https://formorder.gawebecik.com/orders/" + this.users.id, this.users)
+        // .patch("https://formorder.gawebecik.com/orders/" + this.users.id, this.users)
+        .patch("http://localhost:8080/orders/" + this.users.id, this.users)
         .then((response) => {
           this.$swal({
             title: "Data Berhasil Disimpan",
@@ -70,6 +80,7 @@ export default {
             showConfirmButton: false,
           });
           console.log(response);
+          this.users.isExported = response.data.isExported;
           this.$router.push({ name: "home" });
         })
         .catch((error) => {

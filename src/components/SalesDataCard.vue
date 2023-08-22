@@ -15,7 +15,7 @@
                   v-model="users.salesData.csName"
                   @change="updateSalesData"
                   outlined
-                  disabled
+                  :disabled="isExported"
                   required></v-text-field>
               </v-col>
               <v-col cols="12" sm="4" md="4">
@@ -24,6 +24,7 @@
                   v-model="users.salesData.advName"
                   @change="updateSalesData"
                   outlined
+                  :disabled="isExported"
                   required></v-text-field>
               </v-col>
               <v-col cols="12" sm="4" md="4">
@@ -32,6 +33,7 @@
                   v-model="users.salesData.sourceAds"
                   @change="updateSalesData"
                   outlined
+                  :disabled="isExported"
                   required></v-text-field>
               </v-col>
             </v-row>
@@ -41,6 +43,7 @@
     </v-card-text>
   </v-form>
 </template>
+
 
 <script>
 import axios from "axios";
@@ -58,6 +61,57 @@ export default {
   data() {
     return {
       isLoading: true,
+      isExported: true,
+      localUsers: {}, // Add a local data property to store a copy of the prop
+    };
+  },
+
+  mounted() {
+    this.hideSkeleton();
+    this.fetchData();
+  },
+
+  methods: {
+    fetchData() {
+      axios
+        // .get("https://formorder.gawebecik.com/orders/" + this.$route.params.id + "/details")
+        .get("http://localhost:8080/orders/" + this.$route.params.id + "/details")
+        .then((response) => {
+          this.localUsers = response.data.data; // Update the local copy
+          this.isLoading = false;
+          this.isExported = this.localUsers.isExported;
+          this.$emit("users-loaded", this.localUsers); // Emit the local copy
+        })
+        .catch((error) => console.log(error));
+    },
+    updateSalesData() {
+      this.$emit("users-updated", this.localUsers); // Emit the local copy
+    },
+    hideSkeleton() {
+      setTimeout(() => {
+        this.isLoading = false;
+      }, 3000);
+    },
+  },
+};
+</script>
+<!-- <script>
+import axios from "axios";
+
+export default {
+  name: "SalesData",
+
+  props: {
+    users: {
+      type: Object,
+      required: true,
+    },
+  },
+
+  data() {
+    return {
+      isLoading: true,
+      isExported: true,
     };
   },
 
@@ -70,12 +124,15 @@ export default {
     fetchData() {
       axios
         .get(
-          "https://formorder.gawebecik.com/orders/" + this.$route.params.id + "/details"
+          // "https://formorder.gawebecik.com/orders/" + this.$route.params.id + "/details"
+          "http://localhost:8080/orders/" + this.$route.params.id + "/details"
         )
         .then((response) => {
-          console.log("API Response Data:", response.data);
+          // console.log("API Response Data:", response.data);
           this.users = response.data.data;
           this.isLoading = false;
+
+          this.isExported = this.users.isExported;
 
           this.$emit("users-loaded", this.users);
         })
@@ -91,7 +148,7 @@ export default {
     },
   },
 };
-</script>
+</script> -->
 
 <style>
 .custom-card {

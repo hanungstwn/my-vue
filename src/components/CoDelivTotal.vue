@@ -57,6 +57,7 @@
                                   required
                                   item-value="exid"
                                   item-text="productCode"
+                                  :disabled="isExported"
                                   :items="
                                     productCodes.map(
                                       (product) => product.productCode
@@ -80,6 +81,7 @@
                                   outlined
                                   required
                                   type="number"
+                                  :disabled="isExported"
                                   v-model="
                                     checkoutDataEntry.quantity
                                   "></v-text-field>
@@ -88,6 +90,7 @@
                                   hint="Weight /product"
                                   outlined
                                   required
+                                  :disabled="isExported"
                                   v-model="
                                     checkoutDataEntry.weightPerProduct
                                   "></v-text-field>
@@ -107,6 +110,7 @@
                                   hint="Harga /Produk"
                                   outlined
                                   required
+                                  :disabled="isExported"
                                   type="number"
                                   v-model="
                                     checkoutDataEntry.pricePerProduct
@@ -126,6 +130,7 @@
                                   outlined
                                   required
                                   type="number"
+                                  :disabled="isExported"
                                   v-model="
                                     checkoutDataEntry.discount
                                   "></v-text-field>
@@ -143,6 +148,7 @@
                                   hint="Bonus"
                                   outlined
                                   required
+                                  :disabled="isExported"
                                   v-model="
                                     checkoutDataEntry.bonus
                                   "></v-text-field>
@@ -179,6 +185,7 @@
                       :items="expeditions"
                       item-value="exid"
                       item-text="expedition"
+                      :disabled="isExported"
                       outlined></v-autocomplete>
                   </v-col>
                   <v-col cols="12" sm="6" md="6">
@@ -189,6 +196,7 @@
                       :items="warehouse"
                       item-value="exid"
                       item-text="warehouse"
+                      :disabled="isExported"
                       outlined></v-autocomplete>
                   </v-col>
                 </v-row>
@@ -207,13 +215,14 @@
                       label="Provinsi"
                       v-model="users.customerData.province"
                       outlined
-                      disabled></v-text-field>
+                      :disabled="isExported"></v-text-field>
                   </v-col>
                   <v-col cols="12" sm="4" md="4">
                     <v-text-field
                       clearable
                       label="Kabupaten/Kota"
                       v-model="users.customerData.regency"
+                      :disabled="isExported"
                       outlined></v-text-field>
                   </v-col>
                   <v-col cols="12" sm="4" md="4">
@@ -222,6 +231,7 @@
                       label="Kecamatan"
                       v-model="users.customerData.district"
                       :items="districts"
+                      :disabled="isExported"
                       outlined></v-autocomplete>
                   </v-col>
                 </v-row>
@@ -241,6 +251,7 @@
                       outlined
                       required
                       type="number"
+                      :disabled="isExported"
                       @input="calculateTotalDelivery"></v-text-field
                   ></v-col>
                 </v-row>
@@ -335,7 +346,8 @@
                       label="Catatan Kurir"
                       v-model="users.courierNotes"
                       outlined
-                      required></v-textarea>
+                      required
+                      :disabled="isExported"></v-textarea>
                   </v-col>
                 </v-row>
               </div>
@@ -503,6 +515,10 @@ export default {
       }
     },
 
+    isExported() {
+      return this.users.isExported;
+    },
+
     // Menghitung Total Ongkos Kirim Dengan Berat Tanpa Pembulatan
     // totalOngkosKirim() {
     //   const deliveryFee = parseFloat(this.users.deliveryData.deliveryFee);
@@ -519,14 +535,19 @@ export default {
   methods: {
     fetchData() {
       axios
+        // .get(
+        //   "https://formorder.gawebecik.com/orders/" + this.$route.params.id + "/details"
+        // )
         .get(
-          "https://formorder.gawebecik.com/orders/" + this.$route.params.id + "/details"
+          "http://localhost:8080/orders/" + this.$route.params.id + "/details"
         )
         .then((response) => {
           //   console.log("API Response Data:", response.data);
 
           this.users = response.data.data;
           this.isLoading = false;
+
+          this.isExported = this.users.isExported;
 
           this.$emit("users-loaded", this.users);
         })
@@ -646,15 +667,17 @@ export default {
 
         if (selectedData) {
           this.users.deliveryData.deliveryFee = selectedData.delivery_cost;
+
+          // Update the deliveryDiscount from API here
+          // this.users.deliveryData.deliveryDiscount =
+          //   selectedData.delivery_discount || 0;
+
+          // Hitung ulang the total payment
+          this.calculateTotalPayment();
         } else {
           this.users.deliveryData.deliveryFee = null;
+          // this.users.deliveryData.deliveryDiscount = null; // Reset discount when no data found
         }
-
-        // Reset discount delivery to null
-        this.users.deliveryData.deliveryDiscount = null;
-
-        // Hitung ulang the total payment
-        this.calculateTotalPayment();
       }
     },
 
@@ -710,14 +733,14 @@ export default {
       if (
         this.users.totalProductCost !== null &&
         this.users.totalDeliveryCost !== null &&
-        this.users.totalDeliveryDiscount !== null &&
         this.users.totalProductDiscount !== null
       ) {
+        // Update totalPayment calculation to consider deliveryDiscount
         this.users.totalPayment =
           parseFloat(this.users.totalProductCost) +
           parseFloat(this.users.totalDeliveryCost) -
-          parseFloat(this.users.totalDeliveryDiscount) -
-          parseFloat(this.users.totalProductDiscount);
+          parseFloat(this.users.totalProductDiscount) -
+          parseFloat(this.users.deliveryData.deliveryDiscount || 0);
       } else {
         this.users.totalPayment = null;
       }
@@ -762,7 +785,7 @@ export default {
       }
 
       // Reset field diskon ongkir menjadi kosong (null)
-      this.users.deliveryData.deliveryDiscount = null;
+      // this.users.deliveryData.deliveryDiscount = null;
 
       // Update data districts dengan data yang sesuai
       this.districts = filteredData.map((item) => item.district);
@@ -874,6 +897,26 @@ export default {
       },
     },
 
+    totalOngkosKirim: {
+      handler(newTotalOngkosKirim, oldTotalOngkosKirim) {
+        // Only update totalDeliveryCost and totalPayment when totalOngkosKirim changes
+        if (newTotalOngkosKirim !== oldTotalOngkosKirim) {
+          this.calculateTotalDelivery();
+          this.calculateTotalPayment();
+        }
+      },
+    },
+
+    "users.deliveryData.handlingFee": {
+      handler(newHandlingFee, oldHandlingFee) {
+        // Only update totalDeliveryCost and totalPayment when handlingFee changes
+        if (newHandlingFee !== oldHandlingFee) {
+          this.calculateTotalDelivery();
+          this.calculateTotalPayment();
+        }
+      },
+    },
+
     "checkoutDataEntry.productCode": function (newProductCode, oldProductCode) {
       const selectedProduct = this.productCodes.find(
         (product) => product.productCode === newProductCode
@@ -923,6 +966,12 @@ export default {
 
         // menghitung ulang total delivery cost ketika district berubah
         this.calculateTotalDeliveryCost();
+      }
+    },
+
+    "users.deliveryData.deliveryDiscount": function (newDiscount, oldDiscount) {
+      if (newDiscount !== oldDiscount) {
+        this.calculateTotalPayment();
       }
     },
 
