@@ -95,60 +95,6 @@ export default {
   },
 };
 </script>
-<!-- <script>
-import axios from "axios";
-
-export default {
-  name: "SalesData",
-
-  props: {
-    users: {
-      type: Object,
-      required: true,
-    },
-  },
-
-  data() {
-    return {
-      isLoading: true,
-      isExported: true,
-    };
-  },
-
-  mounted() {
-    this.hideSkeleton();
-    this.fetchData();
-  },
-
-  methods: {
-    fetchData() {
-      axios
-        .get(
-          // "https://formorder.gawebecik.com/orders/" + this.$route.params.id + "/details"
-          "http://localhost:8080/orders/" + this.$route.params.id + "/details"
-        )
-        .then((response) => {
-          // console.log("API Response Data:", response.data);
-          this.users = response.data.data;
-          this.isLoading = false;
-
-          this.isExported = this.users.isExported;
-
-          this.$emit("users-loaded", this.users);
-        })
-        .catch((error) => console.log(error));
-    },
-    updateSalesData() {
-      this.$emit("users-updated", this.users);
-    },
-    hideSkeleton() {
-      setTimeout(() => {
-        this.isLoading = false;
-      }, 3000);
-    },
-  },
-};
-</script> -->
 
 <style>
 .custom-card {
