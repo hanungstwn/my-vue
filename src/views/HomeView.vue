@@ -7,7 +7,6 @@
       <hello-world />
     </template>
   </div>
-  <!-- <hello-world /> -->
 </template>
 
 <script>
