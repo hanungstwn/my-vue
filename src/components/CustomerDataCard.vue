@@ -73,14 +73,19 @@ export default {
     return {
       isLoading: true,
       text: "",
-      isExported: true,
-      localUsers: {} 
+      localUsers: {} // Add a local data property to store a copy of the prop
     };
   },
 
   mounted() {
     this.hideSkeleton();
     // this.fetchData();
+  },
+
+  computed:{
+    isExported() {
+      return this.users.isExported;
+    },
   },
 
   methods: {
@@ -104,7 +109,7 @@ export default {
     hideSkeleton() {
       setTimeout(() => {
         this.isLoading = false;
-      }, 3000);
+      }, 1000);
     },
   },
 };
