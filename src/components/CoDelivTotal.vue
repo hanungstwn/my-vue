@@ -858,7 +858,7 @@ export default {
     hideSkeleton() {
       setTimeout(() => {
         this.isLoading = false;
-      }, 3000);
+      }, 1000);
     },
   },
 
