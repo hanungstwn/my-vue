@@ -72,15 +72,14 @@
     <v-data-table
       v-model="selected"
       :headers="headers"
-      :items="filteredItems"
+      :items="(serverItems, filteredItems)"
       :search="search"
       item-key="id"
       class="elevation-1"
       v-if="!loading">
-      <!-- <template v-slot:item.createdAt="{ item }">
-        {{ item.createdAt }}
-      </template> -->
-
+      <template v-slot:item.no="{ item, index }">
+        {{ startIndex + index + 1 }}
+      </template>
       <template v-slot:item.isValidOrder="{ item }">
         <v-chip v-if="item.isValidOrder" color="success"> Benar </v-chip>
         <v-chip v-else color="error"> Salah </v-chip>
@@ -94,26 +93,8 @@
       </template>
 
       <template v-slot:item.actions="{ item }">
-        <!-- Check if the data is exported and update the action buttons accordingly -->
-        <!-- <v-icon v-if="item.isExported" color="success"
-          >mdi-checkbox-marked-circle</v-icon
-        > -->
-        <router-link  v-if="item.isExported" :to="`/orders/${item.id}`">
-          <v-btn small icon @click="confirmDeleteData(item)">
-            <v-icon size="x-large" color="error">mdi-delete-circle</v-icon>
-          </v-btn>
-        </router-link>
-        <router-link :to="`/orders/${item.id}/details`" v-if="item.isExported">
-          <v-btn small icon>
-            <v-icon size="x-large" color="#ff8000">mdi-eye</v-icon>
-          </v-btn>
-        </router-link>
-        <template v-else>
-          <router-link :to="`/orders/${item.id}/details`">
-            <v-btn small icon>
-              <v-icon size="x-large" color="warning">mdi-pencil-circle</v-icon>
-            </v-btn>
-          </router-link>
+        <template>
+          <FormDialog :key="item.id" :users="item" />
           <router-link :to="`/orders/${item.id}`">
             <v-btn small icon @click="confirmDeleteData(item)">
               <v-icon size="x-large" color="error">mdi-delete-circle</v-icon>
@@ -123,31 +104,60 @@
       </template>
     </v-data-table>
     <v-progress-linear v-else indeterminate color="success"></v-progress-linear>
+    <template>
+      <v-pagination
+        v-model="page"
+        :length="totalPages"
+        :total-visible="7"
+        navigation-color="#1B5E20"
+        navigation-text-color="#FFFF"
+        color="#1B5E20"
+        @input="handlePageChange"></v-pagination>
+    </template>
   </v-card>
 </template>
 
 <script>
 import axios from "axios";
 import moment from "moment";
-import VueSweetalert2 from "vue-sweetalert2";
 import Swal from "sweetalert2";
+import VueSweetalert2 from "vue-sweetalert2";
+import FormDialog from "./FormDialog.vue";
+import ExportData from "./ExportData.vue";
+import _debounce from "lodash/debounce";
 
 export default {
   name: "HelloWorld",
-  props: ["orders"],
+  // props: ["orders"],
+  // props: {
+  //   length: {
+  //     type: Number,
+  //     validator: function (value) {
+  //       return value >= 0;
+  //     },
+  //   },
+  // },
+
   components: {
     VueSweetalert2,
+    FormDialog,
+    ExportData,
   },
   data() {
     return {
       search: "",
       startDate: null,
       endDate: null,
-      dialog: false,
       selectedExpedition: null,
       selectedWarehouse: null,
+      totalItems: 0,
       loading: false,
-      custName: "",
+      currentPage: 0,
+      totalPages: 0,
+      page: 1,
+      itemsPerPage: 10,
+      startIndex: 0,
+      debouncedSearch: "",
       selected: [],
       expeditions: [
         {
@@ -268,53 +278,62 @@ export default {
         });
       }
     },
+
+    serverItems() {
+      const startIndex = this.currentPage * this.itemsPerPage + 1;
+      const endIndex = startIndex + this.itemsPerPage;
+
+      return this.filteredItems.slice(startIndex, endIndex + 1);
+    },
   },
   methods: {
-    getData() {
-      const URL = "https://formorder.gawebecik.com/orders";
-      // const URL = "http://localhost:8080/orders";
-      this.users = [];
+    getData(page) {
+      console.log("getData called with page:", page);
+      if (typeof page !== "number" || page < 0) {
+        return;
+      }
+      this.currentPage = page;
+      const actualPage = this.currentPage > 0 ? this.currentPage - 1 : 0;
+      const apiUrl = `http://localhost:8080/orders?page=${actualPage}`;
       this.loading = true;
-      axios
-        .get(URL)
-        .then((res) => {
-          // console.log("Response Data:", res.data); // Log the response data to check its structure
-          this.loading = false;
 
+      axios
+        .get(apiUrl)
+        .then((res) => {
           if (!res.data || !res.data.data || res.data.data.length === 0) {
-            // Tampilkan pesan kesalahan jika tidak ada data yang diterima dari server API
-            console.log("No data received.");
-            // Atau tampilkan pesan kesalahan menggunakan swal
             this.$swal({
               title: "Tidak ada data yang ditemukan",
               icon: "error",
               timer: 1500,
               showConfirmButton: false,
             });
+
+            this.loading = false;
             return;
           }
 
-          this.users = res.data.data;
-          this.users.forEach((user, index) => {
-            user.no = index + 1;
+          const totalCount = res.data.totalCount;
+          const data = res.data.data;
 
+          this.users = data.map((user) => {
             // Ubah format UTC menjadi waktu lokal Indonesia (+7 jam)
             const createdAtLocal = moment
               .utc(user.createdAt)
               .utcOffset("+0700")
               .format("DD MMMM YYYY, HH:mm");
 
-            // console.log(createdAtLocal);
-
             // Tambahkan properti baru ke user untuk menyimpan createdAt dalam format waktu lokal
             user.createdAtLocal = createdAtLocal;
+
+            return user;
           });
 
+          this.totalItems = totalCount;
+          this.totalPages = Math.ceil(totalCount / this.itemsPerPage);
           this.loading = false;
         })
         .catch((error) => {
           console.error("Error fetching data:", error);
-          // Tampilkan pesan kesalahan jika terjadi kesalahan saat mengambil data dari server API
           this.$swal({
             title: "Error fetching data",
             text: "Terjadi kesalahan saat mengambil data dari server API",
@@ -324,6 +343,64 @@ export default {
           });
           this.loading = false;
         });
+    },
+
+    getDataSearch() {
+      const apiUrl = `http://localhost:8080/orders?search=${this.debouncedSearch}`;
+
+      this.loading = true;
+
+      axios
+        .get(apiUrl)
+        .then((res) => {
+          if (!res.data || !res.data.data || res.data.data.length === 0) {
+            this.$swal({
+              title: "Tidak ada data yang ditemukan",
+              icon: "error",
+              timer: 1500,
+              showConfirmButton: false,
+            });
+
+            this.loading = false;
+            return;
+          }
+
+          const totalCount = res.data.totalCount;
+          const data = res.data.data;
+
+          this.users = data.map((user) => {
+            // Ubah format UTC menjadi waktu lokal Indonesia (+7 jam)
+            const createdAtLocal = moment
+              .utc(user.createdAt)
+              .utcOffset("+0700")
+              .format("DD MMMM YYYY, HH:mm");
+
+            // Tambahkan properti baru ke user untuk menyimpan createdAt dalam format waktu lokal
+            user.createdAtLocal = createdAtLocal;
+
+            return user;
+          });
+
+          this.totalItems = totalCount;
+          this.totalPages = Math.ceil(totalCount / this.itemsPerPage);
+          this.loading = false;
+        })
+        .catch((error) => {
+          console.error("Error fetching data:", error);
+          this.$swal({
+            title: "Error fetching data",
+            text: "Terjadi kesalahan saat mengambil data dari server API",
+            icon: "error",
+            timer: 1500,
+            showConfirmButton: false,
+          });
+          this.loading = false;
+        });
+    },
+
+    handlePageChange(page) {
+      this.currentPage = page;
+      this.getData(this.currentPage);
     },
 
     confirmDeleteData(user) {
@@ -345,8 +422,8 @@ export default {
 
     deleteData(user) {
       axios
-        .delete(`https://formorder.gawebecik.com/orders/${user.id}`)
-        // .delete(`http://localhost:8080/orders/${user.id}`)
+        // .delete(`https://formorder.gawebecik.com/orders/${user.id}`)
+        .delete(`http://localhost:8080/orders/${user.id}`)
         .then((response) => {
           this.$swal("Data Berhasil Dihapus");
           console.log(response);
@@ -397,14 +474,6 @@ export default {
           ? moment(this.endDate).utc().format("YYYY-MM-DDTHH:mm")
           : "";
 
-        // format waktu indonesia
-        // const formattedStartDate = this.startDate
-        //   ? moment(this.startDate).format("YYYY-MM-DDTHH:mm")
-        //   : "";
-        // const formattedEndDate = this.endDate
-        //   ? moment(this.endDate).format("YYYY-MM-DDTHH:mm")
-        //   : "";
-
         const selectedExpedition = this.selectedExpedition
           ? this.selectedExpedition
           : "";
@@ -420,8 +489,8 @@ export default {
         };
 
         const queryString = new URLSearchParams(params).toString();
-        const baseURL = "https://formorder.gawebecik.com/orders/generate";
-        // const baseURL = "http://localhost:8080/orders/generate";
+        // const baseURL = "https://formorder.gawebecik.com/orders/generate";
+        const baseURL = "http://localhost:8080/orders/generate";
         const URL = `${baseURL}?${queryString}`;
         const res = await axios({
           url: URL,
@@ -434,9 +503,8 @@ export default {
         await Promise.all(
           filteredData.map(async (item) => {
             const id = item.id;
-            await axios.patch(`https://formorder.gawebecik.com/orders/${id}`, {
-            // await axios.patch(`http://localhost:8080/orders/${id}`, {
-              // ... (your existing data properties)
+            // await axios.patch(`https://formorder.gawebecik.com/orders/${id}`, {
+            await axios.patch(`http://localhost:8080/orders/${id}`, {
               isExported: true,
               customerData: {
                 custName: item.customerData.custName,
@@ -529,10 +597,15 @@ export default {
     endDate() {
       this.validateDates();
     },
+    search: _debounce(function (newVal) {
+      this.debouncedSearch = newVal;
+      this.getDataSearch();
+    }, 800),
   },
 
   mounted() {
-    this.getData();
+    this.getData(0);
+    // this.getData(1);
   },
 };
 </script>
