@@ -21,6 +21,7 @@
     "moment-timezone": "^0.5.43",
     "node-modules": "^0.0.1",
     "pinia": "^2.1.6",
+    "qs": "^6.11.2",
     "sweetalert2": "^11.6.13",
     "vue": "^2.7.14",
     "vue-datatables-net": "^2.0.1",

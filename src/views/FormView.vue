@@ -25,12 +25,7 @@
       </div>
       <div v-else>
         <v-skeleton-loader v-if="isLoading"></v-skeleton-loader>
-        <v-btn
-          depressed
-          class="me-4"
-          color="warning"
-          dark
-          @click="cancelUpdate"
+        <v-btn depressed class="me-4" color="warning" dark @click="cancelUpdate"
           >Kembali</v-btn
         >
       </div>
@@ -81,7 +76,9 @@ export default {
           });
           console.log(response);
           this.users.isExported = response.data.isExported;
-          this.$router.push({ name: "home" });
+          setTimeout(() => {
+            window.close();
+          }, 1500);
         })
         .catch((error) => {
           this.$swal({
@@ -94,8 +91,7 @@ export default {
         });
     },
     cancelUpdate() {
-      // this.$router.push({ name: "home" });
-      window.close();
+      this.$router.push({ name: "home" });
     },
     hideSkeleton() {
       setTimeout(() => {

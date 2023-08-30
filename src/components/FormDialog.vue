@@ -1,7 +1,14 @@
+<!-- <template v-if="!users.isExported">
+  <router-link :to="`/orders/${item.id}/details`" target="_blank">
+    <v-btn small icon>
+      <v-icon size="x-large" color="primary">mdi-pencil-circle</v-icon>
+    </v-btn>
+  </router-link>
+</template> -->
 <template>
   <v-dialog v-model="dialog" persistent max-width="1189px">
     <template v-slot:activator="{ on, attrs }">
-      <v-btn
+      <!-- <v-btn
         v-if="!users.isExported"
         small
         icon
@@ -9,9 +16,8 @@
         v-on="on"
         @click="editOrder(users)">
         <v-icon size="x-large" color="primary">mdi-pencil-circle</v-icon>
-      </v-btn>
+      </v-btn> -->
       <v-btn
-        v-else
         small
         icon
         v-bind="attrs"
@@ -120,7 +126,10 @@ export default {
   methods: {
     updateData() {
       axios
-        .patch("https://formorder.gawebecik.com/orders/" + this.users.id, this.users)
+        .patch(
+          "https://formorder.gawebecik.com/orders/" + this.users.id,
+          this.users
+        )
         // .patch("http://localhost:8080/orders/" + this.users.id, this.users)
         .then((response) => {
           this.$swal({

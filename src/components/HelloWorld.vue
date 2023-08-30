@@ -9,6 +9,7 @@
         @click="handleExportButtonClick"
         >Export</v-btn
       >
+      <!-- <ExportData /> -->
       <div class="date-input">
         <v-datetime-picker
           label="Start Date"
@@ -44,8 +45,7 @@
           class="custom-select-field"
           item-text="expedition"
           item-value="exid"
-          variant="underlined"
-          @change="filterByExpedition"></v-select>
+          variant="underlined"></v-select>
       </div>
       <div class="date-input">
         <v-select
@@ -56,8 +56,7 @@
           class="custom-select-field"
           item-text="warehouse"
           item-value="exid"
-          variant="underlined"
-          @change="filterByExpedition"></v-select>
+          variant="underlined"></v-select>
       </div>
       <v-spacer></v-spacer>
       <v-spacer></v-spacer>
@@ -72,7 +71,7 @@
     <v-data-table
       v-model="selected"
       :headers="headers"
-      :items="(serverItems, filteredItems)"
+      :items="users"
       :search="search"
       item-key="id"
       class="elevation-1"
@@ -93,20 +92,21 @@
       </template>
 
       <template v-slot:item.actions="{ item }">
-        <router-link  v-if="item.isExported" :to="`/orders/${item.id}`">
+        <router-link v-if="item.isExported" :to="`/orders/${item.id}`">
           <v-btn small icon @click="confirmDeleteData(item)">
             <v-icon size="x-large" color="error">mdi-delete-circle</v-icon>
           </v-btn>
         </router-link>
-        <router-link :to="`/orders/${item.id}/details`" v-if="item.isExported">
+        <FormDialog :key="item.id" :users="item" v-if="item.isExported" />
+        <!-- <router-link :to="`/orders/${item.id}/details`" v-if="item.isExported" target="_blank">
           <v-btn small icon>
             <v-icon size="x-large" color="#ff8000">mdi-eye</v-icon>
           </v-btn>
-        </router-link>
+        </router-link> -->
         <template v-else>
-          <router-link :to="`/orders/${item.id}/details`">
+          <router-link :to="`/orders/${item.id}/details`" target="_blank">
             <v-btn small icon>
-              <v-icon size="x-large" color="warning">mdi-pencil-circle</v-icon>
+              <v-icon size="x-large" color="primary">mdi-pencil-circle</v-icon>
             </v-btn>
           </router-link>
           <router-link :to="`/orders/${item.id}`">
@@ -116,6 +116,7 @@
           </router-link>
         </template>
       </template>
+      <!-- <FormDialog :key="item.id" :users="item" /> -->
     </v-data-table>
     <v-progress-linear v-else indeterminate color="success"></v-progress-linear>
     <template>
@@ -142,15 +143,6 @@ import _debounce from "lodash/debounce";
 
 export default {
   name: "HelloWorld",
-  // props: ["orders"],
-  // props: {
-  //   length: {
-  //     type: Number,
-  //     validator: function (value) {
-  //       return value >= 0;
-  //     },
-  //   },
-  // },
 
   components: {
     VueSweetalert2,
@@ -173,6 +165,7 @@ export default {
       startIndex: 0,
       debouncedSearch: "",
       selected: [],
+      filteredItems: [],
       expeditions: [
         {
           expedition: "Jnt",
@@ -231,68 +224,6 @@ export default {
     };
   },
   computed: {
-    filteredItems() {
-      // If startDate, endDate, or invalidDates is true, return all data without filtering
-      if (!this.startDate || !this.endDate || this.invalidDates) {
-        return this.users;
-      }
-
-      // Apply filters based on selectedExpedition and selectedWarehouse (if selected)
-      if (this.selectedExpedition && this.selectedWarehouse) {
-        return this.users.filter((user) => {
-          const itemDate = new Date(user.createdAtLocal);
-          const start = new Date(this.startDate);
-          const end = new Date(this.endDate);
-
-          // Filter based on both selectedExpedition and selectedWarehouse
-          return (
-            itemDate >= start &&
-            itemDate <= end &&
-            user.deliveryData.expedition === this.selectedExpedition &&
-            user.deliveryData.warehouse === this.selectedWarehouse
-          );
-        });
-      } else if (this.selectedExpedition) {
-        // Filter based on only selectedExpedition
-        return this.users.filter((user) => {
-          const itemDate = new Date(user.createdAtLocal);
-          const start = new Date(this.startDate);
-          const end = new Date(this.endDate);
-
-          return (
-            itemDate >= start &&
-            itemDate <= end &&
-            user.deliveryData.expedition === this.selectedExpedition
-          );
-        });
-      } else if (this.selectedWarehouse) {
-        // Filter based on only selectedWarehouse
-        return this.users.filter((user) => {
-          const itemDate = new Date(user.createdAtLocal);
-          const start = new Date(this.startDate);
-          const end = new Date(this.endDate);
-
-          return (
-            itemDate >= start &&
-            itemDate <= end &&
-            user.deliveryData.warehouse === this.selectedWarehouse
-          );
-        });
-      } else {
-        // If no expedition or warehouse selected, apply only date filter
-        this.users.forEach((user) => {
-          user.isExported = this.isDataExported(user);
-        });
-
-        return this.users.filter((user) => {
-          const itemDate = new Date(user.createdAtLocal);
-          const start = new Date(this.startDate);
-          const end = new Date(this.endDate);
-          return itemDate >= start && itemDate <= end;
-        });
-      }
-    },
-
     serverItems() {
       const startIndex = this.currentPage * this.itemsPerPage + 1;
       const endIndex = startIndex + this.itemsPerPage;
@@ -456,33 +387,9 @@ export default {
         });
     },
 
-    validateDates() {
-      this.invalidDates = false;
-      if (this.startDate && this.endDate) {
-        const startDate = new Date(this.startDate);
-        const endDate = new Date(this.endDate);
-        if (startDate > endDate) {
-          this.invalidDates = true;
-        }
-      }
-    },
-
     async exportData() {
-      const filteredData = this.filteredItems;
-
-      if (filteredData.length === 0) {
-        // Tampilkan pesan jika tidak ada data yang sesuai dengan filter
-        this.$swal({
-          title: "Tidak ada data yang sesuai dengan filter",
-          icon: "warning",
-          timer: 1500,
-          showConfirmButton: false,
-        });
-        return;
-      }
-
       try {
-        //format waktu GMT
+        // Format waktu GMT
         const formattedStartDate = this.startDate
           ? moment(this.startDate).utc().format("YYYY-MM-DDTHH:mm")
           : "";
@@ -505,8 +412,8 @@ export default {
         };
 
         const queryString = new URLSearchParams(params).toString();
-        const baseURL = "https://formorder.gawebecik.com/orders/generate";
         // const baseURL = "http://localhost:8080/orders/generate";
+        const baseURL = "https://formorder.gawebecik.com/orders/generate";
         const URL = `${baseURL}?${queryString}`;
         const res = await axios({
           url: URL,
@@ -515,12 +422,28 @@ export default {
           headers: {},
         });
 
+        const blob = new Blob([res.data], {
+          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        });
+        const downloadLink = window.URL.createObjectURL(blob);
+        const filename = `orders_${selectedExpedition}_${selectedWarehouse}_${moment().format(
+          "YYYY-MM-DD_HHmmss"
+        )}`;
+        const anchor = document.createElement("a");
+        anchor.href = downloadLink;
+        anchor.download = `${filename}.xlsx`;
+        document.body.appendChild(anchor);
+        anchor.click();
+        document.body.removeChild(anchor);
+        window.URL.revokeObjectURL(downloadLink);
+
         // Data is downloaded successfully, now update the isExported property
+        const filteredData = this.users;
         await Promise.all(
           filteredData.map(async (item) => {
             const id = item.id;
-            await axios.patch(`https://formorder.gawebecik.com/orders/${id}`, {
             // await axios.patch(`http://localhost:8080/orders/${id}`, {
+            await axios.patch(`https://formorder.gawebecik.com/orders/${id}`, {
               isExported: true,
               customerData: {
                 custName: item.customerData.custName,
@@ -551,9 +474,11 @@ export default {
               totalPayment: item.totalPayment,
               paymentMethod: item.paymentMethod,
             });
+            console.log("Item updated:", id);
           })
         );
 
+        this.filteredItems = filteredData;
         // Tampilkan pesan bahwa data berhasil di-eksport
         this.$swal({
           title: "Data berhasil di-eksport",
@@ -563,26 +488,7 @@ export default {
         });
         setTimeout(() => {
           window.location.reload();
-        }, 800);
-
-        // Update data yang ditampilkan di tabel dengan data terbaru setelah isExported diubah menjadi true
-        this.getData();
-
-        const blob = new Blob([res.data], {
-          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        });
-        const downloadLink = window.URL.createObjectURL(blob);
-        const anchor = document.createElement("a");
-        anchor.href = downloadLink;
-        const filename = `orders_${selectedExpedition}_${selectedWarehouse}_${moment().format(
-          "YYYY-MM-DD_HHmmss"
-        )}`;
-        anchor.download = `${filename}.xlsx`;
-        document.body.appendChild(anchor);
-        anchor.click();
-        document.body.removeChild(anchor);
-        // Clean up
-        window.URL.revokeObjectURL(downloadLink);
+        }, 1000);
       } catch (error) {
         console.error("Error exporting data:", error);
         // Tampilkan pesan kesalahan jika terjadi kesalahan saat mengubah data pada server API
@@ -599,23 +505,8 @@ export default {
       // Panggil fungsi exportData untuk mengubah nilai isExported menjadi true
       this.exportData();
     },
-
-    filterByExpedition() {
-      this.validateDates();
-    },
-
-    filterByWarehouse() {
-      // this.exportData();
-      this.validateDates();
-    },
   },
   watch: {
-    startDate() {
-      this.validateDates();
-    },
-    endDate() {
-      this.validateDates();
-    },
     search: _debounce(function (newVal) {
       this.debouncedSearch = newVal;
       this.getDataSearch();

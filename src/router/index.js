@@ -24,7 +24,7 @@ const routes = [
   {
     path: '/orders/:id/details',
     name: 'OrderDetail',
-    component: OrderDetail
+    component: FormView
   },
   // {
   //   path: '/orders/:id/details',

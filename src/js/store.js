@@ -1,20 +1,32 @@
-import { defineStore } from 'pinia';
+// store.js
+import Vue from 'vue';
+import Vuex from 'vuex';
 
-export const useDeliveryDataStore = defineStore('deliveryData', {
-  state: () => ({
-    users: null,
-  }),
+Vue.use(Vuex);
+
+export default new Vuex.Store({
+  state: {
+    users: [], // Your users data
+    exportSuccess: false, // Flag to indicate if export was successful
+  },
+  mutations: {
+    SET_USERS(state, users) {
+      state.users = users;
+    },
+    SET_EXPORT_SUCCESS(state, value) {
+      state.exportSuccess = value;
+    },
+  },
   actions: {
-    setUsers(users) {
-      this.users = users;
+    setUsers({ commit }, users) {
+      commit('SET_USERS', users);
+    },
+    setExportSuccess({ commit }, value) {
+      commit('SET_EXPORT_SUCCESS', value);
     },
   },
   getters: {
-    totalDeliveryCost() {
-      const deliveryData = this.users && this.users.deliveryData;
-      if (!deliveryData) return null;
-
-      return deliveryData.deliveryFee - deliveryData.deliveryDiscount + deliveryData.handlingFee;
-    },
+    users: state => state.users,
+    exportSuccess: state => state.exportSuccess,
   },
 });

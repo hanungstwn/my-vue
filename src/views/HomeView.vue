@@ -29,11 +29,11 @@ export default {
     hideSpinner() {
       setTimeout(() => {
         this.isLoading = false;
-      }, 3000);
+      }, 2000);
     },
   },
   mounted() {
-    this.hideSpinner(); // Memanggil metode hideSpinner() untuk menyembunyikan spinner setelah sejumlah waktu tertentu
+    this.hideSpinner();
   },
 };
 </script>
