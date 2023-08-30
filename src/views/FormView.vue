@@ -94,7 +94,8 @@ export default {
         });
     },
     cancelUpdate() {
-      this.$router.push({ name: "home" });
+      // this.$router.push({ name: "home" });
+      window.close();
     },
     hideSkeleton() {
       setTimeout(() => {
