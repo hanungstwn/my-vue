@@ -473,7 +473,7 @@ export default {
 
   mounted() {
     this.hideSkeleton();
-    // this.fetchData();
+    this.fetchData();
     this.calculateTotalProductCost();
     this.calculateDiscountAllProduct();
     const jsonDataArrays = [
@@ -533,26 +533,26 @@ export default {
   },
 
   methods: {
-    // fetchData() {
-    //   axios
-    //     .get(
-    //       "https://formorder.gawebecik.com/orders/" + this.$route.params.id + "/details"
-    //     )
-    //     // .get(
-    //     //   "http://localhost:8080/orders/" + this.$route.params.id + "/details"
-    //     // )
-    //     .then((response) => {
-    //       //   console.log("API Response Data:", response.data);
+    fetchData() {
+      axios
+        .get(
+          "https://formorder.gawebecik.com/orders/" + this.$route.params.id + "/details"
+        )
+        // .get(
+        //   "http://localhost:8080/orders/" + this.$route.params.id + "/details"
+        // )
+        .then((response) => {
+          //   console.log("API Response Data:", response.data);
 
-    //       this.users = response.data.data;
-    //       this.isLoading = false;
+          this.users = response.data.data;
+          this.isLoading = false;
 
-    //       this.isExported = this.users.isExported;
+          this.isExported = this.users.isExported;
 
-    //       this.$emit("users-loaded", this.users);
-    //     })
-    //     .catch((error) => console.log(error));
-    // },
+          this.$emit("users-loaded", this.users);
+        })
+        .catch((error) => console.log(error));
+    },
 
     // Menghitung Jumlah Harga Produk
     calculateSumPrice(checkoutDataEntry) {
@@ -858,7 +858,7 @@ export default {
     hideSkeleton() {
       setTimeout(() => {
         this.isLoading = false;
-      }, 1000);
+      }, 3000);
     },
   },
 

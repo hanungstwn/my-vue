@@ -72,14 +72,15 @@
     <v-data-table
       v-model="selected"
       :headers="headers"
-      :items="(serverItems, filteredItems)"
+      :items="filteredItems"
       :search="search"
       item-key="id"
       class="elevation-1"
       v-if="!loading">
-      <template v-slot:item.no="{ item, index }">
-        {{ startIndex + index + 1 }}
-      </template>
+      <!-- <template v-slot:item.createdAt="{ item }">
+        {{ item.createdAt }}
+      </template> -->
+
       <template v-slot:item.isValidOrder="{ item }">
         <v-chip v-if="item.isValidOrder" color="success"> Benar </v-chip>
         <v-chip v-else color="error"> Salah </v-chip>
@@ -93,8 +94,26 @@
       </template>
 
       <template v-slot:item.actions="{ item }">
-        <template>
-          <FormDialog :key="item.id" :users="item" />
+        <!-- Check if the data is exported and update the action buttons accordingly -->
+        <!-- <v-icon v-if="item.isExported" color="success"
+          >mdi-checkbox-marked-circle</v-icon
+        > -->
+        <router-link  v-if="item.isExported" :to="`/orders/${item.id}`">
+          <v-btn small icon @click="confirmDeleteData(item)">
+            <v-icon size="x-large" color="error">mdi-delete-circle</v-icon>
+          </v-btn>
+        </router-link>
+        <router-link :to="`/orders/${item.id}/details`" v-if="item.isExported" target="_blank">
+          <v-btn small icon>
+            <v-icon size="x-large" color="#ff8000">mdi-eye</v-icon>
+          </v-btn>
+        </router-link>
+        <template v-else>
+          <router-link :to="`/orders/${item.id}/details`" target="_blank">
+            <v-btn small icon>
+              <v-icon size="x-large" color="warning">mdi-pencil-circle</v-icon>
+            </v-btn>
+          </router-link>
           <router-link :to="`/orders/${item.id}`">
             <v-btn small icon @click="confirmDeleteData(item)">
               <v-icon size="x-large" color="error">mdi-delete-circle</v-icon>
@@ -104,60 +123,31 @@
       </template>
     </v-data-table>
     <v-progress-linear v-else indeterminate color="success"></v-progress-linear>
-    <template>
-      <v-pagination
-        v-model="page"
-        :length="totalPages"
-        :total-visible="7"
-        navigation-color="#1B5E20"
-        navigation-text-color="#FFFF"
-        color="#1B5E20"
-        @input="handlePageChange"></v-pagination>
-    </template>
   </v-card>
 </template>
 
 <script>
 import axios from "axios";
 import moment from "moment";
-import Swal from "sweetalert2";
 import VueSweetalert2 from "vue-sweetalert2";
-import FormDialog from "./FormDialog.vue";
-import ExportData from "./ExportData.vue";
-import _debounce from "lodash/debounce";
+import Swal from "sweetalert2";
 
 export default {
   name: "HelloWorld",
-  // props: ["orders"],
-  // props: {
-  //   length: {
-  //     type: Number,
-  //     validator: function (value) {
-  //       return value >= 0;
-  //     },
-  //   },
-  // },
-
+  props: ["orders"],
   components: {
     VueSweetalert2,
-    FormDialog,
-    ExportData,
   },
   data() {
     return {
       search: "",
       startDate: null,
       endDate: null,
+      dialog: false,
       selectedExpedition: null,
       selectedWarehouse: null,
-      totalItems: 0,
       loading: false,
-      currentPage: 0,
-      totalPages: 0,
-      page: 1,
-      itemsPerPage: 10,
-      startIndex: 0,
-      debouncedSearch: "",
+      custName: "",
       selected: [],
       expeditions: [
         {
@@ -278,63 +268,53 @@ export default {
         });
       }
     },
-
-    serverItems() {
-      const startIndex = this.currentPage * this.itemsPerPage + 1;
-      const endIndex = startIndex + this.itemsPerPage;
-
-      return this.filteredItems.slice(startIndex, endIndex + 1);
-    },
   },
   methods: {
-    getData(page) {
-      console.log("getData called with page:", page);
-      if (typeof page !== "number" || page < 0) {
-        return;
-      }
-      this.currentPage = page;
-      const actualPage = this.currentPage > 0 ? this.currentPage - 1 : 0;
-      // const apiUrl = `http://localhost:8080/orders?page=${actualPage}`;
-      const apiUrl = `https://formorder.gawebecik.com/orders?page=${actualPage}`;
+    getData() {
+      const URL = "https://formorder.gawebecik.com/orders";
+      // const URL = "http://localhost:8080/orders";
+      this.users = [];
       this.loading = true;
-
       axios
-        .get(apiUrl)
+        .get(URL)
         .then((res) => {
+          // console.log("Response Data:", res.data); // Log the response data to check its structure
+          this.loading = false;
+
           if (!res.data || !res.data.data || res.data.data.length === 0) {
+            // Tampilkan pesan kesalahan jika tidak ada data yang diterima dari server API
+            console.log("No data received.");
+            // Atau tampilkan pesan kesalahan menggunakan swal
             this.$swal({
               title: "Tidak ada data yang ditemukan",
               icon: "error",
               timer: 1500,
               showConfirmButton: false,
             });
-
-            this.loading = false;
             return;
           }
 
-          const totalCount = res.data.totalCount;
-          const data = res.data.data;
+          this.users = res.data.data;
+          this.users.forEach((user, index) => {
+            user.no = index + 1;
 
-          this.users = data.map((user) => {
             // Ubah format UTC menjadi waktu lokal Indonesia (+7 jam)
             const createdAtLocal = moment
               .utc(user.createdAt)
               .utcOffset("+0700")
               .format("DD MMMM YYYY, HH:mm");
 
+            // console.log(createdAtLocal);
+
             // Tambahkan properti baru ke user untuk menyimpan createdAt dalam format waktu lokal
             user.createdAtLocal = createdAtLocal;
-
-            return user;
           });
 
-          this.totalItems = totalCount;
-          this.totalPages = Math.ceil(totalCount / this.itemsPerPage);
           this.loading = false;
         })
         .catch((error) => {
           console.error("Error fetching data:", error);
+          // Tampilkan pesan kesalahan jika terjadi kesalahan saat mengambil data dari server API
           this.$swal({
             title: "Error fetching data",
             text: "Terjadi kesalahan saat mengambil data dari server API",
@@ -344,65 +324,6 @@ export default {
           });
           this.loading = false;
         });
-    },
-
-    getDataSearch() {
-      // const apiUrl = `http://localhost:8080/orders?search=${this.debouncedSearch}`;
-      const apiUrl = `https://formorder.gawebecik.com/orders?search=${this.debouncedSearch}`;
-
-      this.loading = true;
-
-      axios
-        .get(apiUrl)
-        .then((res) => {
-          if (!res.data || !res.data.data || res.data.data.length === 0) {
-            this.$swal({
-              title: "Tidak ada data yang ditemukan",
-              icon: "error",
-              timer: 1500,
-              showConfirmButton: false,
-            });
-
-            this.loading = false;
-            return;
-          }
-
-          const totalCount = res.data.totalCount;
-          const data = res.data.data;
-
-          this.users = data.map((user) => {
-            // Ubah format UTC menjadi waktu lokal Indonesia (+7 jam)
-            const createdAtLocal = moment
-              .utc(user.createdAt)
-              .utcOffset("+0700")
-              .format("DD MMMM YYYY, HH:mm");
-
-            // Tambahkan properti baru ke user untuk menyimpan createdAt dalam format waktu lokal
-            user.createdAtLocal = createdAtLocal;
-
-            return user;
-          });
-
-          this.totalItems = totalCount;
-          this.totalPages = Math.ceil(totalCount / this.itemsPerPage);
-          this.loading = false;
-        })
-        .catch((error) => {
-          console.error("Error fetching data:", error);
-          this.$swal({
-            title: "Error fetching data",
-            text: "Terjadi kesalahan saat mengambil data dari server API",
-            icon: "error",
-            timer: 1500,
-            showConfirmButton: false,
-          });
-          this.loading = false;
-        });
-    },
-
-    handlePageChange(page) {
-      this.currentPage = page;
-      this.getData(this.currentPage);
     },
 
     confirmDeleteData(user) {
@@ -476,6 +397,14 @@ export default {
           ? moment(this.endDate).utc().format("YYYY-MM-DDTHH:mm")
           : "";
 
+        // format waktu indonesia
+        // const formattedStartDate = this.startDate
+        //   ? moment(this.startDate).format("YYYY-MM-DDTHH:mm")
+        //   : "";
+        // const formattedEndDate = this.endDate
+        //   ? moment(this.endDate).format("YYYY-MM-DDTHH:mm")
+        //   : "";
+
         const selectedExpedition = this.selectedExpedition
           ? this.selectedExpedition
           : "";
@@ -507,6 +436,7 @@ export default {
             const id = item.id;
             await axios.patch(`https://formorder.gawebecik.com/orders/${id}`, {
             // await axios.patch(`http://localhost:8080/orders/${id}`, {
+              // ... (your existing data properties)
               isExported: true,
               customerData: {
                 custName: item.customerData.custName,
@@ -547,9 +477,6 @@ export default {
           timer: 1500,
           showConfirmButton: false,
         });
-        setTimeout(() => {
-          window.location.reload();
-        }, 800);
 
         // Update data yang ditampilkan di tabel dengan data terbaru setelah isExported diubah menjadi true
         this.getData();
@@ -602,15 +529,10 @@ export default {
     endDate() {
       this.validateDates();
     },
-    search: _debounce(function (newVal) {
-      this.debouncedSearch = newVal;
-      this.getDataSearch();
-    }, 800),
   },
 
   mounted() {
-    this.getData(0);
-    // this.getData(1);
+    this.getData();
   },
 };
 </script>
