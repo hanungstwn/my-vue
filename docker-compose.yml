@@ -5,6 +5,7 @@ services:
     container_name: inputer-dashboard
     image: vue-inputer
     ports:
-      - '8085:80'
+      - '8086:80'
+    restart: always
 
 
