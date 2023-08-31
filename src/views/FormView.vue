@@ -76,9 +76,10 @@ export default {
           });
           console.log(response);
           this.users.isExported = response.data.isExported;
-          setTimeout(() => {
-            window.close();
-          }, 1500);
+          this.$router.push({ name: "home" });
+          // setTimeout(() => {
+          //   window.close();
+          // }, 1500);
         })
         .catch((error) => {
           this.$swal({

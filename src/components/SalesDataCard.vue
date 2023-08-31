@@ -83,15 +83,15 @@ export default {
         .get("https://formorder.gawebecik.com/orders/" + this.$route.params.id + "/details")
         // .get("http://localhost:8080/orders/" + this.$route.params.id + "/details")
         .then((response) => {
-          this.localUsers = response.data.data; // Update the local copy
+          this.localUsers = response.data.data;
           this.isLoading = false;
           this.isExported = this.localUsers.isExported;
-          this.$emit("users-loaded", this.localUsers); // Emit the local copy
+          this.$emit("users-loaded", this.localUsers);
         })
         .catch((error) => console.log(error));
     },
     updateSalesData() {
-      this.$emit("users-updated", this.localUsers); // Emit the local copy
+      this.$emit("users-updated", this.localUsers);
     },
     hideSkeleton() {
       setTimeout(() => {

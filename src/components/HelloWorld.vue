@@ -1,16 +1,16 @@
 <template>
   <v-card class="card-custom">
     <v-card-title class="card-title-custom">
-      <v-btn
+      <!-- <v-btn
         dark
         variant="tonal"
         color="#1D6F42"
         class="me-4"
         @click="handleExportButtonClick"
         >Export</v-btn
-      >
-      <!-- <ExportData /> -->
-      <div class="date-input">
+      > -->
+      <ExportData />
+      <!-- <div class="date-input">
         <v-datetime-picker
           label="Start Date"
           v-model="startDate"
@@ -57,7 +57,9 @@
           item-text="warehouse"
           item-value="exid"
           variant="underlined"></v-select>
-      </div>
+      </div> -->
+      <v-spacer></v-spacer>
+      <v-spacer></v-spacer>
       <v-spacer></v-spacer>
       <v-spacer></v-spacer>
       <v-text-field
@@ -437,13 +439,16 @@ export default {
         document.body.removeChild(anchor);
         window.URL.revokeObjectURL(downloadLink);
 
-        // Data is downloaded successfully, now update the isExported property
-        const filteredData = this.users;
-        await Promise.all(
-          filteredData.map(async (item) => {
-            const id = item.id;
-            // await axios.patch(`http://localhost:8080/orders/${id}`, {
-            await axios.patch(`https://formorder.gawebecik.com/orders/${id}`, {
+        // Membuat array id di looping terus nilai yang ada dalam array dipassing ke request patch berdasarkan id dalam array
+        // Fetch the data for updating isExported
+        // const dataForUpdateUrl = `http://localhost:8080/orders?expedition=${selectedExpedition}&warehouse=${selectedWarehouse}&timeStart=${formattedStartDate}&timeEnd=${formattedEndDate}`;
+        const dataForUpdateUrl = `https://formorder.gawebecik.com/orders?expedition=${selectedExpedition}&warehouse=${selectedWarehouse}&timeStart=${formattedStartDate}&timeEnd=${formattedEndDate}`;
+        const dataForUpdateResponse = await axios.get(dataForUpdateUrl);
+        const dataForUpdate = dataForUpdateResponse.data.data;
+        for (const item of dataForUpdate) {
+          try {
+            // await axios.patch(`http://localhost:8080/orders/${item.id}`, {
+            await axios.patch(`https://formorder.gawebecik.com/orders/${item.id}`, {
               isExported: true,
               customerData: {
                 custName: item.customerData.custName,
@@ -474,11 +479,11 @@ export default {
               totalPayment: item.totalPayment,
               paymentMethod: item.paymentMethod,
             });
-            console.log("Item updated:", id);
-          })
-        );
+          } catch (error) {
+            console.error(`Error updating item ${item.id}:`, error);
+          }
+        }
 
-        this.filteredItems = filteredData;
         // Tampilkan pesan bahwa data berhasil di-eksport
         this.$swal({
           title: "Data berhasil di-eksport",
@@ -501,8 +506,43 @@ export default {
         });
       }
     },
+
     handleExportButtonClick() {
       // Panggil fungsi exportData untuk mengubah nilai isExported menjadi true
+      this.exportData();
+    },
+
+    async handleExportButtonClick() {
+      if (
+        !this.startDate ||
+        !this.endDate ||
+        !this.selectedExpedition ||
+        !this.selectedWarehouse
+      ) {
+        this.$swal({
+          title: "Harap Lengkapi Data",
+          text: "Mohon pilih Start Date, End Date, Expedition, dan Warehouse terlebih dahulu",
+          icon: "error",
+          timer: 2000,
+          showConfirmButton: false,
+        });
+        return;
+      }
+
+      const hasExportedData = this.selected.some((item) => item.isExported);
+
+      if (hasExportedData) {
+        this.$swal({
+          title: "Beberapa Data Sudah Dieksport!",
+          text: "Hanya Mengeksport Data yang Belum Dieksport",
+          icon: "error",
+          timer: 2000,
+          showConfirmButton: false,
+        });
+        return;
+      }
+
+      // Proceed with exporting data for items that are not yet exported
       this.exportData();
     },
   },
