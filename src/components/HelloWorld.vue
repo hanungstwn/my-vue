@@ -239,8 +239,8 @@ export default {
       }
       this.currentPage = page;
       const actualPage = this.currentPage > 0 ? this.currentPage - 1 : 0;
-      const apiUrl = `http://localhost:8080/orders?page=${actualPage}`;
-      // const apiUrl = `https://formorder.gawebecik.com/orders?page=${actualPage}`;
+      // const apiUrl = `http://localhost:8080/orders?page=${actualPage}`;
+      const apiUrl = `https://formorder.gawebecik.com/orders?page=${actualPage}`;
       this.loading = true;
 
       axios
@@ -292,8 +292,8 @@ export default {
     },
 
     getDataSearch() {
-      const apiUrl = `http://localhost:8080/orders?search=${this.debouncedSearch}`;
-      // const apiUrl = `https://formorder.gawebecik.com/orders?search=${this.debouncedSearch}`;
+      // const apiUrl = `http://localhost:8080/orders?search=${this.debouncedSearch}`;
+      const apiUrl = `https://formorder.gawebecik.com/orders?search=${this.debouncedSearch}`;
 
       this.loading = true;
 
@@ -369,8 +369,8 @@ export default {
 
     deleteData(user) {
       axios
-        // .delete(`https://formorder.gawebecik.com/orders/${user.id}`)
-        .delete(`http://localhost:8080/orders/${user.id}`)
+        .delete(`https://formorder.gawebecik.com/orders/${user.id}`)
+        // .delete(`http://localhost:8080/orders/${user.id}`)
         .then((response) => {
           this.$swal("Data Berhasil Dihapus");
           console.log(response);
@@ -412,8 +412,8 @@ export default {
         };
 
         const queryString = new URLSearchParams(params).toString();
-        const baseURL = "http://localhost:8080/orders/generate";
-        // const baseURL = "https://formorder.gawebecik.com/orders/generate";
+        // const baseURL = "http://localhost:8080/orders/generate";
+        const baseURL = "https://formorder.gawebecik.com/orders/generate";
         const URL = `${baseURL}?${queryString}`;
         const res = await axios({
           url: URL,
@@ -442,8 +442,8 @@ export default {
         await Promise.all(
           filteredData.map(async (item) => {
             const id = item.id;
-            await axios.patch(`http://localhost:8080/orders/${id}`, {
-            // await axios.patch(`https://formorder.gawebecik.com/orders/${id}`, {
+            // await axios.patch(`http://localhost:8080/orders/${id}`, {
+            await axios.patch(`https://formorder.gawebecik.com/orders/${id}`, {
               isExported: true,
               customerData: {
                 custName: item.customerData.custName,

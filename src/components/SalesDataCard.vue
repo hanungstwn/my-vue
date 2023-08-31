@@ -80,8 +80,8 @@ export default {
   methods: {
     fetchData() {
       axios
-        // .get("https://formorder.gawebecik.com/orders/" + this.$route.params.id + "/details")
-        .get("http://localhost:8080/orders/" + this.$route.params.id + "/details")
+        .get("https://formorder.gawebecik.com/orders/" + this.$route.params.id + "/details")
+        // .get("http://localhost:8080/orders/" + this.$route.params.id + "/details")
         .then((response) => {
           this.localUsers = response.data.data; // Update the local copy
           this.isLoading = false;
