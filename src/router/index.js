@@ -23,7 +23,7 @@ const routes = [
   // },
   {
     path: '/orders/:id/details',
-    name: 'OrderDetail',
+    name: 'FormView',
     component: FormView
   },
   // {

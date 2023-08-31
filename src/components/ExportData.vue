@@ -163,7 +163,8 @@ export default {
         };
 
         const queryString = new URLSearchParams(params).toString();
-        const baseURL = "http://localhost:8080/orders/generate";
+        // const baseURL = "http://localhost:8080/orders/generate";
+        const baseURL = "https://formorder.gawebecik.com/orders/generate";
         const URL = `${baseURL}?${queryString}`;
         const res = await axios({
           url: URL,
@@ -187,12 +188,16 @@ export default {
         document.body.removeChild(anchor);
         window.URL.revokeObjectURL(downloadLink);
 
-        // Data is downloaded successfully, now update the isExported property
-        const filteredData = this.users;
-        await Promise.all(
-          filteredData.map(async (item) => {
-            const id = item.id;
-            await axios.patch(`http://localhost:8080/orders/${id}`, {
+        // Membuat array id di looping terus nilai yang ada dalam array dipassing ke request patch berdasarkan id dalam array
+        // Fetch the data for updating isExported
+        // const dataForUpdateUrl = `http://localhost:8080/orders?expedition=${selectedExpedition}&warehouse=${selectedWarehouse}&timeStart=${formattedStartDate}&timeEnd=${formattedEndDate}`;
+        const dataForUpdateUrl = `https://formorder.gawebecik.com/orders?expedition=${selectedExpedition}&warehouse=${selectedWarehouse}&timeStart=${formattedStartDate}&timeEnd=${formattedEndDate}`;
+        const dataForUpdateResponse = await axios.get(dataForUpdateUrl);
+        const dataForUpdate = dataForUpdateResponse.data.data;
+        for (const item of dataForUpdate) {
+          try {
+            // await axios.patch(`http://localhost:8080/orders/${item.id}`, {
+            await axios.patch(`https://formorder.gawebecik.com/orders/${item.id}`, {
               isExported: true,
               customerData: {
                 custName: item.customerData.custName,
@@ -223,12 +228,11 @@ export default {
               totalPayment: item.totalPayment,
               paymentMethod: item.paymentMethod,
             });
-            console.log("Item updated:", id);
-          })
-        );
+          } catch (error) {
+            console.error(`Error updating item ${item.id}:`, error);
+          }
+        }
 
-        // this.filteredItems = filteredData;
-        this.users = filteredData;
         // Tampilkan pesan bahwa data berhasil di-eksport
         this.$swal({
           title: "Data berhasil di-eksport",
@@ -236,20 +240,58 @@ export default {
           timer: 1500,
           showConfirmButton: false,
         });
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
       } catch (error) {
         console.error("Error exporting data:", error);
         // Tampilkan pesan kesalahan jika terjadi kesalahan saat mengubah data pada server API
         this.$swal({
           title: "Error exporting data",
-          text: "Terjadi kesalahan saat mengubah data pada server API",
+          text: "Data Sudah Di Eksport",
           icon: "error",
           timer: 1500,
           showConfirmButton: false,
         });
       }
     },
+
     handleExportButtonClick() {
       // Panggil fungsi exportData untuk mengubah nilai isExported menjadi true
+      this.exportData();
+    },
+
+    async handleExportButtonClick() {
+      if (
+        !this.startDate ||
+        !this.endDate ||
+        !this.selectedExpedition ||
+        !this.selectedWarehouse
+      ) {
+        this.$swal({
+          title: "Harap Lengkapi Data",
+          text: "Mohon pilih Start Date, End Date, Expedition, dan Warehouse terlebih dahulu",
+          icon: "error",
+          timer: 2000,
+          showConfirmButton: false,
+        });
+        return;
+      }
+
+      // const hasExportedData = this.selected.some((item) => item.isExported);
+
+      // if (hasExportedData) {
+      //   this.$swal({
+      //     title: "Beberapa Data Sudah Dieksport!",
+      //     text: "Hanya Mengeksport Data yang Belum Dieksport",
+      //     icon: "error",
+      //     timer: 2000,
+      //     showConfirmButton: false,
+      //   });
+      //   return;
+      // }
+
+      // Proceed with exporting data for items that are not yet exported
       this.exportData();
     },
   },
