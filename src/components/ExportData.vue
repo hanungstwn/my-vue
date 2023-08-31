@@ -164,6 +164,7 @@ export default {
 
         const queryString = new URLSearchParams(params).toString();
         const baseURL = "http://localhost:8080/orders/generate";
+        // const baseURL = "https://formorder.gawebecik.com/orders/generate";
         const URL = `${baseURL}?${queryString}`;
         const res = await axios({
           url: URL,
@@ -193,6 +194,7 @@ export default {
           filteredData.map(async (item) => {
             const id = item.id;
             await axios.patch(`http://localhost:8080/orders/${id}`, {
+            // await axios.patch(`https://formorder.gawebecik.com/orders/${id}`, {
               isExported: true,
               customerData: {
                 custName: item.customerData.custName,
