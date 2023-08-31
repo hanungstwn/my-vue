@@ -104,7 +104,7 @@
           </v-btn>
         </router-link> -->
         <template v-else>
-          <router-link :to="`/orders/${item.id}/details`" target="_blank">
+          <router-link :to="`/orders/${item.id}/details`">
             <v-btn small icon>
               <v-icon size="x-large" color="primary">mdi-pencil-circle</v-icon>
             </v-btn>
