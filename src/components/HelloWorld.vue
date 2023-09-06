@@ -10,7 +10,7 @@
         >Export</v-btn
       > -->
       <ExportData />
-      <!-- <div class="date-input">
+      <div class="date-input">
         <v-datetime-picker
           label="Start Date"
           v-model="startDate"
@@ -36,7 +36,7 @@
           </template></v-datetime-picker
         >
       </div>
-      <div class="date-input">
+      <!-- <div class="date-input">
         <v-select
           clearable
           v-model="selectedExpedition"
@@ -130,6 +130,13 @@
         navigation-text-color="#FFFF"
         color="#1B5E20"
         @input="handlePageChange"></v-pagination>
+      <!-- <v-chip class="d-flex justify-center" color="green"
+        >Halaman : {{ page }}</v-chip
+      > -->
+
+      <p class="text-center green white--text text--darken-2">
+        Halaman : {{ page }}
+      </p>
     </template>
   </v-card>
 </template>
@@ -233,69 +240,85 @@ export default {
       return this.filteredItems.slice(startIndex, endIndex + 1);
     },
   },
+
   methods: {
-    getData(page) {
-      console.log("getData called with page:", page);
-      if (typeof page !== "number" || page < 0) {
-        return;
-      }
-      this.currentPage = page;
+    // getData(page) {
+    //   // console.log("getData called with page:", page);
+    //   if (typeof page !== "number" || page < 0) {
+    //     return;
+    //   }
+    //   this.currentPage = page;
+    //   const actualPage = this.currentPage > 0 ? this.currentPage - 1 : 0;
+    //   const apiUrl = `http://localhost:8080/orders?page=${actualPage}`;
+    //   // const apiUrl = `https://formorder.gawebecik.com/orders?page=${actualPage}`;
+    //   this.loading = true;
+
+    //   axios
+    //     .get(apiUrl)
+    //     .then((res) => {
+    //       if (!res.data || !res.data.data || res.data.data.length === 0) {
+    //         this.$swal({
+    //           title: "Tidak ada data yang ditemukan",
+    //           icon: "error",
+    //           timer: 1500,
+    //           showConfirmButton: false,
+    //         });
+
+    //         this.loading = false;
+    //         return;
+    //       }
+
+    //       const totalCount = res.data.totalCount;
+    //       const data = res.data.data;
+
+    //       this.users = data.map((user) => {
+    //         // Ubah format UTC menjadi waktu lokal Indonesia (+7 jam)
+    //         const createdAtLocal = moment
+    //           .utc(user.createdAt)
+    //           .utcOffset("+0700")
+    //           .format("DD MMMM YYYY, HH:mm");
+
+    //         // Tambahkan properti baru ke user untuk menyimpan createdAt dalam format waktu lokal
+    //         user.createdAtLocal = createdAtLocal;
+
+    //         return user;
+    //       });
+
+    //       this.totalItems = totalCount;
+    //       this.totalPages = Math.ceil(totalCount / this.itemsPerPage);
+    //       this.loading = false;
+    //     })
+    //     .catch((error) => {
+    //       console.error("Error fetching data:", error);
+    //       this.$swal({
+    //         title: "Error fetching data",
+    //         text: "Terjadi kesalahan saat mengambil data dari server",
+    //         icon: "error",
+    //         timer: 1500,
+    //         showConfirmButton: false,
+    //       });
+    //       this.loading = false;
+    //     });
+    // },
+
+    getDataWithOptions(page = 0) {
       const actualPage = this.currentPage > 0 ? this.currentPage - 1 : 0;
-      // const apiUrl = `http://localhost:8080/orders?page=${actualPage}`;
-      const apiUrl = `https://formorder.gawebecik.com/orders?page=${actualPage}`;
-      this.loading = true;
+      let apiUrl = `https://formorder.gawebecik.com/orders?page=${actualPage}`;
+      // let apiUrl = `http://localhost:8080/orders?page=${actualPage}`;
 
-      axios
-        .get(apiUrl)
-        .then((res) => {
-          if (!res.data || !res.data.data || res.data.data.length === 0) {
-            this.$swal({
-              title: "Tidak ada data yang ditemukan",
-              icon: "error",
-              timer: 1500,
-              showConfirmButton: false,
-            });
+      if (this.startDate && this.endDate) {
+        const formattedStartDate = moment(this.startDate)
+          .utc()
+          .format("YYYY-MM-DDTHH:mm");
+        const formattedEndDate = moment(this.endDate)
+          .utc()
+          .format("YYYY-MM-DDTHH:mm");
+        apiUrl += `&timeStart=${formattedStartDate}&timeEnd=${formattedEndDate}`;
+      }
 
-            this.loading = false;
-            return;
-          }
-
-          const totalCount = res.data.totalCount;
-          const data = res.data.data;
-
-          this.users = data.map((user) => {
-            // Ubah format UTC menjadi waktu lokal Indonesia (+7 jam)
-            const createdAtLocal = moment
-              .utc(user.createdAt)
-              .utcOffset("+0700")
-              .format("DD MMMM YYYY, HH:mm");
-
-            // Tambahkan properti baru ke user untuk menyimpan createdAt dalam format waktu lokal
-            user.createdAtLocal = createdAtLocal;
-
-            return user;
-          });
-
-          this.totalItems = totalCount;
-          this.totalPages = Math.ceil(totalCount / this.itemsPerPage);
-          this.loading = false;
-        })
-        .catch((error) => {
-          console.error("Error fetching data:", error);
-          this.$swal({
-            title: "Error fetching data",
-            text: "Terjadi kesalahan saat mengambil data dari server API",
-            icon: "error",
-            timer: 1500,
-            showConfirmButton: false,
-          });
-          this.loading = false;
-        });
-    },
-
-    getDataSearch() {
-      // const apiUrl = `http://localhost:8080/orders?search=${this.debouncedSearch}`;
-      const apiUrl = `https://formorder.gawebecik.com/orders?search=${this.debouncedSearch}`;
+      if (this.debouncedSearch) {
+        apiUrl += `&search=${encodeURIComponent(this.debouncedSearch)}`;
+      }
 
       this.loading = true;
 
@@ -332,13 +355,14 @@ export default {
 
           this.totalItems = totalCount;
           this.totalPages = Math.ceil(totalCount / this.itemsPerPage);
+          this.currentPage = page;
           this.loading = false;
         })
         .catch((error) => {
           console.error("Error fetching data:", error);
           this.$swal({
             title: "Error fetching data",
-            text: "Terjadi kesalahan saat mengambil data dari server API",
+            text: "Terjadi kesalahan saat mengambil data dari server",
             icon: "error",
             timer: 1500,
             showConfirmButton: false,
@@ -349,7 +373,7 @@ export default {
 
     handlePageChange(page) {
       this.currentPage = page;
-      this.getData(this.currentPage);
+      this.getDataWithOptions(this.currentPage);
     },
 
     confirmDeleteData(user) {
@@ -448,7 +472,9 @@ export default {
         for (const item of dataForUpdate) {
           try {
             // await axios.patch(`http://localhost:8080/orders/${item.id}`, {
-            await axios.patch(`https://formorder.gawebecik.com/orders/${item.id}`, {
+              await axios.patch(
+                `https://formorder.gawebecik.com/orders/${item.id}`,
+                {
               isExported: true,
               customerData: {
                 custName: item.customerData.custName,
@@ -549,12 +575,34 @@ export default {
   watch: {
     search: _debounce(function (newVal) {
       this.debouncedSearch = newVal;
-      this.getDataSearch();
+      if (!newVal) {
+        this.getDataWithOptions(0);
+      } else {
+        this.getDataWithOptions();
+      }
     }, 800),
+    startDate: function (newStartDate, oldStartDate) {
+      if (newStartDate !== oldStartDate) {
+        if (!newStartDate) {
+          this.getDataWithOptions(0);
+        } else {
+          this.getDataWithOptions();
+        }
+      }
+    },
+    endDate: function (newEndDate, oldEndDate) {
+      if (newEndDate !== oldEndDate) {
+        if (!newEndDate) {
+          this.getDataWithOptions(0);
+        } else {
+          this.getDataWithOptions();
+        }
+      }
+    },
   },
 
   mounted() {
-    this.getData(0);
+    this.getDataWithOptions(0);
     // this.getData(1);
   },
 };
