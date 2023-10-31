@@ -73,7 +73,7 @@ export default {
     return {
       isLoading: true,
       text: "",
-      localUsers: {} // Add a local data property to store a copy of the prop
+      localUsers: {}
     };
   },
 

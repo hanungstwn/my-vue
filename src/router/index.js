@@ -4,6 +4,8 @@ import HomeView from '../views/HomeView.vue'
 import OrderDetail from '../views/FormView.vue'
 import FormView from '../views/FormView.vue'
 import FormDialog  from '../components/FormDialog.vue'
+import LoginView from '@/views/LoginView.vue'
+import RegisterView from '@/views/RegisterView.vue'
 
 Vue.use(VueRouter)
 
@@ -26,6 +28,16 @@ const routes = [
     name: 'FormView',
     component: FormView
   },
+  {
+    path: '/login',
+    name: 'LoginView',
+    component: LoginView
+  },
+  {
+    path: '/register',
+    name: 'RegisterView',
+    component: RegisterView
+  }
   // {
   //   path: '/orders/:id/details',
   //   name: 'Form',

@@ -303,8 +303,8 @@ export default {
 
     getDataWithOptions(page = 0) {
       const actualPage = this.currentPage > 0 ? this.currentPage - 1 : 0;
-      let apiUrl = `https://formorder.gawebecik.com/orders?page=${actualPage}`;
-      // let apiUrl = `http://localhost:8080/orders?page=${actualPage}`;
+      // let apiUrl = `https://formorder.gawebecik.com/orders?page=${actualPage}`;
+      let apiUrl = `http://localhost:8080/orders?page=${actualPage}`;
 
       if (this.startDate && this.endDate) {
         const formattedStartDate = moment(this.startDate)
@@ -395,8 +395,8 @@ export default {
 
     deleteData(user) {
       axios
-        .delete(`https://formorder.gawebecik.com/orders/${user.id}`)
-        // .delete(`http://localhost:8080/orders/${user.id}`)
+        // .delete(`https://formorder.gawebecik.com/orders/${user.id}`)
+        .delete(`http://localhost:8080/orders/${user.id}`)
         .then((response) => {
           this.$swal("Data Berhasil Dihapus");
           console.log(response);
@@ -413,125 +413,125 @@ export default {
         });
     },
 
-    async exportData() {
-      try {
-        // Format waktu GMT
-        const formattedStartDate = this.startDate
-          ? moment(this.startDate).utc().format("YYYY-MM-DDTHH:mm")
-          : "";
-        const formattedEndDate = this.endDate
-          ? moment(this.endDate).utc().format("YYYY-MM-DDTHH:mm")
-          : "";
+    // async exportData() {
+    //   try {
+    //     // Format waktu GMT
+    //     const formattedStartDate = this.startDate
+    //       ? moment(this.startDate).utc().format("YYYY-MM-DDTHH:mm")
+    //       : "";
+    //     const formattedEndDate = this.endDate
+    //       ? moment(this.endDate).utc().format("YYYY-MM-DDTHH:mm")
+    //       : "";
 
-        const selectedExpedition = this.selectedExpedition
-          ? this.selectedExpedition
-          : "";
-        const selectedWarehouse = this.selectedWarehouse
-          ? this.selectedWarehouse
-          : "";
+    //     const selectedExpedition = this.selectedExpedition
+    //       ? this.selectedExpedition
+    //       : "";
+    //     const selectedWarehouse = this.selectedWarehouse
+    //       ? this.selectedWarehouse
+    //       : "";
 
-        const params = {
-          expedition: selectedExpedition,
-          warehouse: selectedWarehouse,
-          timeStart: formattedStartDate,
-          timeEnd: formattedEndDate,
-        };
+    //     const params = {
+    //       expedition: selectedExpedition,
+    //       warehouse: selectedWarehouse,
+    //       timeStart: formattedStartDate,
+    //       timeEnd: formattedEndDate,
+    //     };
 
-        const queryString = new URLSearchParams(params).toString();
-        // const baseURL = "http://localhost:8080/orders/generate";
-        const baseURL = "https://formorder.gawebecik.com/orders/generate";
-        const URL = `${baseURL}?${queryString}`;
-        const res = await axios({
-          url: URL,
-          method: "GET",
-          responseType: "blob",
-          headers: {},
-        });
+    //     const queryString = new URLSearchParams(params).toString();
+    //     const baseURL = "http://localhost:8080/orders/generate";
+    //     // const baseURL = "https://formorder.gawebecik.com/orders/generate";
+    //     const URL = `${baseURL}?${queryString}`;
+    //     const res = await axios({
+    //       url: URL,
+    //       method: "GET",
+    //       responseType: "blob",
+    //       headers: {},
+    //     });
 
-        const blob = new Blob([res.data], {
-          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        });
-        const downloadLink = window.URL.createObjectURL(blob);
-        const filename = `orders_${selectedExpedition}_${selectedWarehouse}_${moment().format(
-          "YYYY-MM-DD_HHmmss"
-        )}`;
-        const anchor = document.createElement("a");
-        anchor.href = downloadLink;
-        anchor.download = `${filename}.xlsx`;
-        document.body.appendChild(anchor);
-        anchor.click();
-        document.body.removeChild(anchor);
-        window.URL.revokeObjectURL(downloadLink);
+    //     const blob = new Blob([res.data], {
+    //       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    //     });
+    //     const downloadLink = window.URL.createObjectURL(blob);
+    //     const filename = `orders_${selectedExpedition}_${selectedWarehouse}_${moment().format(
+    //       "YYYY-MM-DD_HHmmss"
+    //     )}`;
+    //     const anchor = document.createElement("a");
+    //     anchor.href = downloadLink;
+    //     anchor.download = `${filename}.xlsx`;
+    //     document.body.appendChild(anchor);
+    //     anchor.click();
+    //     document.body.removeChild(anchor);
+    //     window.URL.revokeObjectURL(downloadLink);
 
-        // Membuat array id di looping terus nilai yang ada dalam array dipassing ke request patch berdasarkan id dalam array
-        // Fetch the data for updating isExported
-        // const dataForUpdateUrl = `http://localhost:8080/orders?expedition=${selectedExpedition}&warehouse=${selectedWarehouse}&timeStart=${formattedStartDate}&timeEnd=${formattedEndDate}`;
-        const dataForUpdateUrl = `https://formorder.gawebecik.com/orders?expedition=${selectedExpedition}&warehouse=${selectedWarehouse}&timeStart=${formattedStartDate}&timeEnd=${formattedEndDate}`;
-        const dataForUpdateResponse = await axios.get(dataForUpdateUrl);
-        const dataForUpdate = dataForUpdateResponse.data.data;
-        for (const item of dataForUpdate) {
-          try {
-            // await axios.patch(`http://localhost:8080/orders/${item.id}`, {
-              await axios.patch(
-                `https://formorder.gawebecik.com/orders/${item.id}`,
-                {
-              isExported: true,
-              customerData: {
-                custName: item.customerData.custName,
-                custWhatsapp: item.customerData.custWhatsapp,
-                roCount: item.customerData.roCount,
-                district: item.customerData.district,
-                regency: item.customerData.regency,
-                province: item.customerData.fullAddress,
-                fullAddress: item.customerData.fullAddress,
-              },
-              checkoutData: item.checkoutData,
-              deliveryData: {
-                expedition: item.deliveryData.expedition,
-                warehouse: item.deliveryData.warehouse,
-                deliveryFee: item.deliveryData.deliveryFee,
-                handlingFee: item.deliveryData.handlingFee,
-                deliveryDiscount: item.deliveryData.deliveryDiscount,
-              },
-              salesData: {
-                csName: item.salesData.csName,
-                advName: item.salesData.advName,
-                sourceAds: item.salesData.sourceAds,
-              },
-              totalProductCost: item.totalProductCost,
-              totalProductDiscount: item.totalProductDiscount,
-              totalDeliveryCost: item.totalDeliveryCost,
-              totalDeliveryDiscount: item.totalDeliveryDiscount,
-              totalPayment: item.totalPayment,
-              paymentMethod: item.paymentMethod,
-            });
-          } catch (error) {
-            console.error(`Error updating item ${item.id}:`, error);
-          }
-        }
+    //     // Membuat array id di looping terus nilai yang ada dalam array dipassing ke request patch berdasarkan id dalam array
+    //     // Fetch the data for updating isExported
+    //     const dataForUpdateUrl = `http://localhost:8080/orders?expedition=${selectedExpedition}&warehouse=${selectedWarehouse}&timeStart=${formattedStartDate}&timeEnd=${formattedEndDate}`;
+    //     // const dataForUpdateUrl = `https://formorder.gawebecik.com/orders?expedition=${selectedExpedition}&warehouse=${selectedWarehouse}&timeStart=${formattedStartDate}&timeEnd=${formattedEndDate}`;
+    //     const dataForUpdateResponse = await axios.get(dataForUpdateUrl);
+    //     const dataForUpdate = dataForUpdateResponse.data.data;
+    //     for (const item of dataForUpdate) {
+    //       try {
+    //         await axios.patch(`http://localhost:8080/orders/${item.id}`, {
+    //           // await axios.patch(
+    //           //   `https://formorder.gawebecik.com/orders/${item.id}`,
+    //           //   {
+    //           isExported: true,
+    //           customerData: {
+    //             custName: item.customerData.custName,
+    //             custWhatsapp: item.customerData.custWhatsapp,
+    //             roCount: item.customerData.roCount,
+    //             district: item.customerData.district,
+    //             regency: item.customerData.regency,
+    //             province: item.customerData.fullAddress,
+    //             fullAddress: item.customerData.fullAddress,
+    //           },
+    //           checkoutData: item.checkoutData,
+    //           deliveryData: {
+    //             expedition: item.deliveryData.expedition,
+    //             warehouse: item.deliveryData.warehouse,
+    //             deliveryFee: item.deliveryData.deliveryFee,
+    //             handlingFee: item.deliveryData.handlingFee,
+    //             deliveryDiscount: item.deliveryData.deliveryDiscount,
+    //           },
+    //           salesData: {
+    //             csName: item.salesData.csName,
+    //             advName: item.salesData.advName,
+    //             sourceAds: item.salesData.sourceAds,
+    //           },
+    //           totalProductCost: item.totalProductCost,
+    //           totalProductDiscount: item.totalProductDiscount,
+    //           totalDeliveryCost: item.totalDeliveryCost,
+    //           totalDeliveryDiscount: item.totalDeliveryDiscount,
+    //           totalPayment: item.totalPayment,
+    //           paymentMethod: item.paymentMethod,
+    //         });
+    //       } catch (error) {
+    //         console.error(`Error updating item ${item.id}:`, error);
+    //       }
+    //     }
 
-        // Tampilkan pesan bahwa data berhasil di-eksport
-        this.$swal({
-          title: "Data berhasil di-eksport",
-          icon: "success",
-          timer: 1500,
-          showConfirmButton: false,
-        });
-        setTimeout(() => {
-          window.location.reload();
-        }, 1000);
-      } catch (error) {
-        console.error("Error exporting data:", error);
-        // Tampilkan pesan kesalahan jika terjadi kesalahan saat mengubah data pada server API
-        this.$swal({
-          title: "Error exporting data",
-          text: "Terjadi kesalahan saat mengubah data pada server API",
-          icon: "error",
-          timer: 1500,
-          showConfirmButton: false,
-        });
-      }
-    },
+    //     // Tampilkan pesan bahwa data berhasil di-eksport
+    //     this.$swal({
+    //       title: "Data berhasil di-eksport",
+    //       icon: "success",
+    //       timer: 1500,
+    //       showConfirmButton: false,
+    //     });
+    //     setTimeout(() => {
+    //       window.location.reload();
+    //     }, 1000);
+    //   } catch (error) {
+    //     console.error("Error exporting data:", error);
+    //     // Tampilkan pesan kesalahan jika terjadi kesalahan saat mengubah data pada server API
+    //     this.$swal({
+    //       title: "Error exporting data",
+    //       text: "Terjadi kesalahan saat mengubah data pada server API",
+    //       icon: "error",
+    //       timer: 1500,
+    //       showConfirmButton: false,
+    //     });
+    //   }
+    // },
 
     handleExportButtonClick() {
       // Panggil fungsi exportData untuk mengubah nilai isExported menjadi true
