@@ -17,7 +17,7 @@
                   outlined
                   required
                   :disabled="isExported"
-                  v-model="users.customerData.custName"></v-text-field>
+                  v-model="users.customerData.customerName"></v-text-field>
               </v-col>
               <v-col cols="12" sm="4" md="4">
                 <v-text-field
@@ -27,7 +27,7 @@
                   outlined
                   required
                   :disabled="isExported"
-                  v-model="users.customerData.custWhatsapp"></v-text-field>
+                  v-model="users.customerData.customerWhatsapp"></v-text-field>
               </v-col>
               <v-col cols="12" sm="4" md="4">
                 <v-text-field
@@ -90,8 +90,10 @@ export default {
 
   methods: {
     fetchData() {
+      console.log("asdassad")
       axios
-        .get("https://formorder.gawebecik.com/orders/" + this.$route.params.id + "/details")
+        // .get("https://formorder.gawebecik.com/orders/" + this.$route.params.id)
+        .get("http://localhost:8080/orders/" + this.$route.params.id)
         // .get("http://localhost:8080/orders/" + this.$route.params.id + "/details")
         .then((response) => {
           this.localUsers = response.data.data;
@@ -112,6 +114,9 @@ export default {
       }, 1000);
     },
   },
+  created() {
+    this.fetchData();
+  }
 };
 </script>
 

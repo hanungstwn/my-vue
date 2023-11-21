@@ -1,58 +1,145 @@
-<template lang="">
+<template>
   <div>
-    <div class="wrapper fadeInDown">
-      <div id="formContent">
-        <!-- Tabs Titles -->
-        <h2 class="active">Sign In</h2>
-        <router-link to="/register">
-          <button class="inactive underlineHover">SIGN UP</button>
-        </router-link>
+    <body>
+      <div class="wrapper fadeInDown">
+        <div id="formContent" style="margin-top: 90px">
+          <!-- Tabs Titles -->
+          <h2 class="active">Sign In</h2>
+          <!-- <router-link to="/register">
+            <button class="inactive underlineHover">SIGN UP</button>
+          </router-link> -->
 
-        <!-- Icon -->
-        <div class="fadeIn first mt-5 mb-5">
-          <img src="../assets/BAGONK-black.png" />
-        </div>
+          <!-- Icon -->
+          <div class="fadeIn first mt-6 mb-5">
+            <img src="../assets/BAGONK-black.png" />
+          </div>
 
-        <!-- Login Form -->
-        <form>
-          <input
-            type="text"
-            id="login"
-            class="fadeIn second"
-            name="login"
-            placeholder="login" />
-          <input
-            type="text"
-            id="password"
-            class="fadeIn third"
-            name="login"
-            placeholder="password" />
-          <input type="submit" class="fadeIn fourth mt-5" value="Log In" />
-        </form>
+          <!-- Login Form -->
+          <form @submit.prevent="login">
+            <input
+              type="text"
+              id="login"
+              class="fadeIn second input-customize"
+              name="login"
+              placeholder="Nickname"
+              v-model="nickName" />
+            <input
+              type="password"
+              id="password"
+              class="fadeIn third input-customize"
+              name="login"
+              placeholder="password"
+              v-model="password" />
+            <input
+              type="submit"
+              class="fadeIn fourth input-custom mt-6 mb-6"
+              value="Log In" />
+            <p v-if="error" class="text-danger">{{ error }}</p>
+          </form>
 
-        <!-- Remind Passowrd -->
-        <!-- <div id="formFooter">
+          <!-- Remind Passowrd -->
+          <!-- <div id="formFooter">
           <a class="underlineHover" href="#">Forgot Password?</a>
         </div> -->
+        </div>
+        <br />
+        <br />
+        <br />
+        <br />
+        <br />
       </div>
-    </div>
+    </body>
   </div>
 </template>
 <script>
-export default {};
+import axios from "axios";
+import Swal from "sweetalert2";
+
+export default {
+  data() {
+    return {
+      nickName: "",
+      password: "",
+      error: "",
+    };
+  },
+  methods: {
+    async login() {
+      const apiKey = "jT9AqE2XKMRtk78DKfleQMVdM8XA62O+1Uk7OgPcmY4=";
+
+      const config = {
+        headers: {
+          "X-API-Key": apiKey,
+        },
+      };
+
+      try {
+        const response = await axios.post(
+          "http://localhost:8080/login",
+          {
+            nickName: this.nickName,
+            password: this.password,
+          },
+          config
+        );
+
+        const res = response.data;
+        const token = res.data.token;
+
+        axios.defaults.headers.common["Authorization"] = token;
+        axios.defaults.headers.common["X-API-Key"] = apiKey;
+
+        localStorage.setItem("token", token);
+        localStorage.setItem("X-API-Key", apiKey);
+
+        console.log(token);
+
+        this.$router.push({ name: "dashboard" });
+      } catch (error) {
+        if (error.response && error.response.status === 404) {
+          Swal.fire({
+            title: "Not Found",
+            text: "The requested resource was not found.",
+            icon: "error",
+          });
+        } else if (error.response && error.response.status === 500) {
+          Swal.fire({
+            title: "Internal Server Error",
+            text: "Check Internet Connection!",
+            icon: "error",
+          });
+        } else if (error.response && error.response.status === 502) {
+          Swal.fire({
+            title: "Bad Gateway",
+            text: "The server is currently unavailable (Bad Gateway).",
+            icon: "error",
+          });
+        } else {
+          Swal.fire({
+            title: "Invalid!",
+            text: "Invalid Account Data",
+            icon: "error",
+          });
+        }
+        // this.error = "Nickname atau Password salah";
+      } finally {
+        this.loading = false;
+      }
+    },
+  },
+};
 </script>
-<style lang="css">
+
+<style>
 @import url("https://fonts.googleapis.com/css?family=Poppins");
-
-/* BASIC */
-
-html {
-  background-color: #56baed;
-}
 
 body {
   font-family: "Poppins", sans-serif;
-  height: 100vh;
+  background-image: url("/src/assets/bg.jpg");
+  background-repeat: no-repeat;
+  background-size: cover;
+  max-width: 100%;
+  height: 100%;
 }
 
 a {
@@ -118,11 +205,13 @@ h2.active {
   border-bottom: 2px solid #84d444;
 }
 
+.text-danger {
+  color: red;
+}
+
 /* FORM TYPOGRAPHY*/
 
-input[type="button"],
-input[type="submit"],
-input[type="reset"] {
+.input-custom {
   background-color: #84d444;
   border: none;
   color: white;
@@ -132,8 +221,8 @@ input[type="reset"] {
   display: inline-block;
   text-transform: uppercase;
   font-size: 13px;
-  -webkit-box-shadow: 0 10px 30px 0 rgba(95, 186, 233, 0.4);
-  box-shadow: 0 10px 30px 0 rgba(95, 186, 233, 0.4);
+  /* -webkit-box-shadow: 0 10px 30px 0 rgba(95, 186, 233, 0.4); */
+  /* box-shadow: 0 10px 30px 0 rgba(95, 186, 233, 0.4); */
   -webkit-border-radius: 5px 5px 5px 5px;
   border-radius: 5px 5px 5px 5px;
   margin: 5px 20px 40px 20px;
@@ -144,15 +233,11 @@ input[type="reset"] {
   transition: all 0.3s ease-in-out;
 }
 
-input[type="button"]:hover,
-input[type="submit"]:hover,
-input[type="reset"]:hover {
+.input-custom:hover {
   background-color: #84d444;
 }
 
-input[type="button"]:active,
-input[type="submit"]:active,
-input[type="reset"]:active {
+.input-custom:active {
   -moz-transform: scale(0.95);
   -webkit-transform: scale(0.95);
   -o-transform: scale(0.95);
@@ -160,7 +245,7 @@ input[type="reset"]:active {
   transform: scale(0.95);
 }
 
-input[type="text"] {
+.input-customize {
   background-color: #f6f6f6;
   border: none;
   color: #0d0d0d;
@@ -181,12 +266,12 @@ input[type="text"] {
   border-radius: 5px 5px 5px 5px;
 }
 
-input[type="text"]:focus {
+.input-customize:focus {
   background-color: #fff;
-  border-bottom: 2px solid #5fbae9;
+  border-bottom: 2px solid #84d444;
 }
 
-input[type="text"]:placeholder {
+.input-customize:placeholder {
   color: #cccccc;
 }
 
@@ -311,19 +396,5 @@ input[type="text"]:placeholder {
 
 .underlineHover:hover:after {
   width: 100%;
-}
-
-/* OTHERS */
-
-*:focus {
-  outline: none;
-}
-
-#icon {
-  width: 60%;
-}
-
-* {
-  box-sizing: border-box;
 }
 </style>

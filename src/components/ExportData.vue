@@ -142,10 +142,10 @@ export default {
       try {
         // Format waktu GMT
         const formattedStartDate = this.startDate
-          ? moment(this.startDate).utc().format("YYYY-MM-DDTHH:mm")
+          ? moment(this.startDate).utc().format("YYYY-MM-DD HH:mm:ss") + "Z"
           : "";
         const formattedEndDate = this.endDate
-          ? moment(this.endDate).utc().format("YYYY-MM-DDTHH:mm")
+          ? moment(this.endDate).utc().format("YYYY-MM-DD HH:mm:ss") + "Z"
           : "";
 
         const selectedExpedition = this.selectedExpedition
@@ -156,10 +156,10 @@ export default {
           : "";
 
         const params = {
-          expedition: selectedExpedition,
-          warehouse: selectedWarehouse,
-          timeStart: formattedStartDate,
-          timeEnd: formattedEndDate,
+          exp: selectedExpedition,
+          wh: selectedWarehouse,
+          start: formattedStartDate,
+          end: formattedEndDate,
         };
 
         const queryString = new URLSearchParams(params).toString();
@@ -184,7 +184,13 @@ export default {
         anchor.href = downloadLink;
         anchor.download = `${filename}.xlsx`;
         document.body.appendChild(anchor);
-        anchor.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window }));
+        anchor.dispatchEvent(
+          new MouseEvent("click", {
+            bubbles: true,
+            cancelable: true,
+            view: window,
+          })
+        );
         document.body.removeChild(anchor);
         window.URL.revokeObjectURL(downloadLink);
 

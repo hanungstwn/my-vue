@@ -30,7 +30,7 @@
               <v-col cols="12" sm="4" md="4">
                 <v-text-field
                   label="Sumber Iklan"
-                  v-model="users.salesData.sourceAds"
+                  v-model="users.salesData.adsSource"
                   @change="updateSalesData"
                   outlined
                   :disabled="isExported"
@@ -80,7 +80,8 @@ export default {
   methods: {
     fetchData() {
       axios
-        .get("https://formorder.gawebecik.com/orders/" + this.$route.params.id + "/details")
+        // .get("https://formorder.gawebecik.com/orders/" + this.$route.params.id)
+        .get("http://localhost:8080/orders/" + this.$route.params.id)
         // .get("http://localhost:8080/orders/" + this.$route.params.id + "/details")
         .then((response) => {
           this.localUsers = response.data.data;

@@ -1,20 +1,36 @@
-import Vue from 'vue'
-import VueRouter from 'vue-router'
-import HomeView from '../views/HomeView.vue'
-import OrderDetail from '../views/FormView.vue'
-import FormView from '../views/FormView.vue'
-import FormDialog  from '../components/FormDialog.vue'
-import LoginView from '@/views/LoginView.vue'
-import RegisterView from '@/views/RegisterView.vue'
+import Vue from "vue";
+import VueRouter from "vue-router";
+import Dashboard from "../views/HomeView.vue";
+import FormView from "../views/FormView.vue";
+import FormDialog from "../components/FormDialog.vue";
+import CekData from "../components/CustomerDataCard.vue"
+import LayoutMaster from "../LayoutMaster.vue";
+import Login from "../views/LoginView.vue";
+import RegisterView from "@/views/RegisterView.vue";
 
-Vue.use(VueRouter)
+Vue.use(VueRouter);
+
+// Middleware untuk memeriksa login
+const requireAuth = (to, from, next) => {
+  const isAuthenticated = !!localStorage.getItem("token"); // Ganti ini dengan cara memeriksa apakah pengguna telah login sesuai implementasi Anda
+  if (isAuthenticated) {
+    next();
+  } else {
+    next("/login");
+  }
+};
 
 const routes = [
   {
-    path: '/',
-    name: 'home',
-    component: HomeView
+    path: "/",
+    name: "login",
+    redirect: "/login",
   },
+  // {
+  //   path: '/',
+  //   name: 'home',
+  //   component: HomeView
+  // },
   // {
   //   path: '/about',
   //   name: 'about',
@@ -23,21 +39,46 @@ const routes = [
   //   // which is lazy-loaded when the route is visited.
   //   component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue')
   // },
+  // {
+  //   path: "/dashboard",
+  //   name: "dashboard",
+  //   component: Dashboard,
+  //   beforeEnter: requireAuth,
+  // },
+  // {
+  //   path: "/orders/:id/details",
+  //   name: "FormView",
+  //   component: FormView,
+  //   beforeEnter: requireAuth,
+  // },
   {
-    path: '/orders/:id/details',
-    name: 'FormView',
-    component: FormView
+    path: "/dashboard",
+    name: "dashboard",
+    component: LayoutMaster,
+    beforeEnter: requireAuth,
+    children: [
+      {
+        path: "/",
+        name: "dashboard",
+        component: Dashboard,
+      },
+      {
+        path: "/orders/:id",
+        name: "FormView",
+        component: FormView,
+      },
+    ],
   },
   {
-    path: '/login',
-    name: 'LoginView',
-    component: LoginView
+    path: "/login",
+    name: "Login",
+    component: Login,
   },
   {
-    path: '/register',
-    name: 'RegisterView',
-    component: RegisterView
-  }
+    path: "/register",
+    name: "RegisterView",
+    component: RegisterView,
+  },
   // {
   //   path: '/orders/:id/details',
   //   name: 'Form',
@@ -49,12 +90,12 @@ const routes = [
   //   component: FormDialog,
   //   props: true // Pass route params as props
   // }
-]
+];
 
 const router = new VueRouter({
-  mode: 'history',
+  mode: "history",
   base: process.env.BASE_URL,
-  routes
-})
+  routes,
+});
 
-export default router
+export default router;

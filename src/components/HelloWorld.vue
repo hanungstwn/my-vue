@@ -106,16 +106,16 @@
           </v-btn>
         </router-link> -->
         <template v-else>
-          <router-link :to="`/orders/${item.id}/details`">
+          <router-link :to="`/orders/${item.id}`">
             <v-btn small icon>
               <v-icon size="x-large" color="primary">mdi-pencil-circle</v-icon>
             </v-btn>
           </router-link>
-          <router-link :to="`/orders/${item.id}`">
+          <!-- <router-link :to="`/orders/${item.id}`"> -->
             <v-btn small icon @click="confirmDeleteData(item)">
               <v-icon size="x-large" color="error">mdi-delete-circle</v-icon>
             </v-btn>
-          </router-link>
+          <!-- </router-link> -->
         </template>
       </template>
       <!-- <FormDialog :key="item.id" :users="item" /> -->
@@ -211,11 +211,11 @@ export default {
         },
         {
           text: "Nama Customer",
-          value: "customerData.custName",
+          value: "customerData.customerName",
         },
         {
           text: "Nomor HP",
-          value: "customerData.custWhatsapp",
+          value: "customerData.customerWhatsapp",
         },
         { text: "Diskon Ongkir", value: "deliveryData.deliveryDiscount" },
         { text: "Tanggal", value: "createdAtLocal" },
@@ -389,7 +389,8 @@ export default {
       }).then((result) => {
         if (result.isConfirmed) {
           this.deleteData(user);
-        } else this.$router.push({ name: "home" });
+        } 
+        // else this.$router.push({ name: "dashboard" });
       });
     },
 
@@ -400,7 +401,8 @@ export default {
         .then((response) => {
           this.$swal("Data Berhasil Dihapus");
           console.log(response);
-          this.$router.push({ name: "home" });
+          this.$router.go(0);
+          // this.$router.push({ name: "dashboard" });
         })
         .catch((error) => {
           this.$swal({
@@ -533,44 +535,44 @@ export default {
     //   }
     // },
 
-    handleExportButtonClick() {
-      // Panggil fungsi exportData untuk mengubah nilai isExported menjadi true
-      this.exportData();
-    },
+    // handleExportButtonClick() {
+    //   // Panggil fungsi exportData untuk mengubah nilai isExported menjadi true
+    //   this.exportData();
+    // },
 
-    async handleExportButtonClick() {
-      if (
-        !this.startDate ||
-        !this.endDate ||
-        !this.selectedExpedition ||
-        !this.selectedWarehouse
-      ) {
-        this.$swal({
-          title: "Harap Lengkapi Data",
-          text: "Mohon pilih Start Date, End Date, Expedition, dan Warehouse terlebih dahulu",
-          icon: "error",
-          timer: 2000,
-          showConfirmButton: false,
-        });
-        return;
-      }
+    // async handleExportButtonClick() {
+    //   if (
+    //     !this.startDate ||
+    //     !this.endDate ||
+    //     !this.selectedExpedition ||
+    //     !this.selectedWarehouse
+    //   ) {
+    //     this.$swal({
+    //       title: "Harap Lengkapi Data",
+    //       text: "Mohon pilih Start Date, End Date, Expedition, dan Warehouse terlebih dahulu",
+    //       icon: "error",
+    //       timer: 2000,
+    //       showConfirmButton: false,
+    //     });
+    //     return;
+    //   }
 
-      const hasExportedData = this.selected.some((item) => item.isExported);
+    //   const hasExportedData = this.selected.some((item) => item.isExported);
 
-      if (hasExportedData) {
-        this.$swal({
-          title: "Beberapa Data Sudah Dieksport!",
-          text: "Hanya Mengeksport Data yang Belum Dieksport",
-          icon: "error",
-          timer: 2000,
-          showConfirmButton: false,
-        });
-        return;
-      }
+    //   if (hasExportedData) {
+    //     this.$swal({
+    //       title: "Beberapa Data Sudah Dieksport!",
+    //       text: "Hanya Mengeksport Data yang Belum Dieksport",
+    //       icon: "error",
+    //       timer: 2000,
+    //       showConfirmButton: false,
+    //     });
+    //     return;
+    //   }
 
-      // Proceed with exporting data for items that are not yet exported
-      this.exportData();
-    },
+    //   // Proceed with exporting data for items that are not yet exported
+    //   this.exportData();
+    // },
   },
   watch: {
     search: _debounce(function (newVal) {

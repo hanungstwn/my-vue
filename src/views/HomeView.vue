@@ -12,6 +12,7 @@
 <script>
 import HelloWorld from "../components/HelloWorld";
 import Spinner from "../components/Spinner.vue";
+import axios from "axios";
 
 export default {
   name: "Home",
@@ -32,6 +33,15 @@ export default {
       }, 2000);
     },
   },
+  // created() {
+  //   const token = localStorage.getItem("token");
+  //   const apiKey = localStorage.getItem("X-API-Key");
+  //   if (token, apiKey) {
+  //     axios.defaults.headers.common["Authorization"] = token;
+  //     axios.defaults.headers.common["X-API-Key"] = apiKey;
+  //   }
+  //   console.log(token);
+  // },
   mounted() {
     this.hideSpinner();
   },

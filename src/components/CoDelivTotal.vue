@@ -536,7 +536,8 @@ export default {
     fetchData() {
       axios
         .get(
-          "https://formorder.gawebecik.com/orders/" + this.$route.params.id + "/details"
+          // "https://formorder.gawebecik.com/orders/" + this.$route.params.id
+          "http://localhost:8080/orders/" + this.$route.params.id
           // "http://localhost:8080/orders/" + this.$route.params.id + "/details"
         )
         .then((response) => {

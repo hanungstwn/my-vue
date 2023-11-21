@@ -65,8 +65,11 @@ export default {
   methods: {
     updateData() {
       axios
-        .patch("https://formorder.gawebecik.com/orders/" + this.users.id, this.users)
-        // .patch("http://localhost:8080/orders/" + this.users.id, this.users)
+        // .patch(
+        //   "https://formorder.gawebecik.com/orders/" + this.users.id,
+        //   this.users
+        // )
+        .patch("http://localhost:8080/orders/" + this.users.id, this.users)
         .then((response) => {
           this.$swal({
             title: "Data Berhasil Disimpan",
@@ -76,7 +79,7 @@ export default {
           });
           console.log(response);
           this.users.isExported = response.data.isExported;
-          this.$router.push({ name: "home" });
+          this.$router.push({ name: "dashboard" });
           // setTimeout(() => {
           //   window.close();
           // }, 1500);
