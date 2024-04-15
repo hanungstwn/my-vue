@@ -55,7 +55,7 @@ const routes = [
     path: "/dashboard",
     name: "dashboard",
     component: LayoutMaster,
-    beforeEnter: requireAuth,
+    // beforeEnter: requireAuth,
     children: [
       {
         path: "/",
